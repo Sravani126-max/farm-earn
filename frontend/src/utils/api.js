@@ -25,7 +25,13 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const message = error.response?.data?.message || error.message || 'Something went wrong';
-        toast.error(message);
+        
+        // Skip toast for intentional 404s during Google sign-in checks
+        const isAuthCheck = error.config?.url === '/auth/login' && error.response?.status === 404;
+        
+        if (!isAuthCheck) {
+            toast.error(message);
+        }
 
         // Optional: Logout if token is expired or unauthorized
         if (error.response?.status === 401) {

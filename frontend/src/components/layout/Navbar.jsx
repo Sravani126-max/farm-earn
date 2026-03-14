@@ -57,6 +57,14 @@ const Navbar = () => {
                                         <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
                                     </div>
                                     <Link
+                                        to="/profile"
+                                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 font-medium"
+                                        onClick={() => setShowDropdown(false)}
+                                    >
+                                        <User className="h-4 w-4" />
+                                        <span>My Profile</span>
+                                    </Link>
+                                    <Link
                                         to={dashboardLink}
                                         className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 font-medium"
                                         onClick={() => setShowDropdown(false)}
@@ -99,6 +107,7 @@ const Navbar = () => {
                     <Link to="/marketplace" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Marketplace</Link>
                     {user ? (
                         <>
+                            <Link to="/profile" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">My Profile</Link>
                             <Link to={dashboardLink} onClick={() => setIsOpen(false)} className="block px-3 py-2 text-base font-medium text-primary-600 bg-primary-50 rounded-lg">Dashboard</Link>
                             <button onClick={handleLogout} className="w-full text-left block px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg">Logout</button>
                         </>

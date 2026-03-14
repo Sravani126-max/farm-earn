@@ -65,4 +65,28 @@ const getAnalytics = asyncHandler(async (req, res) => {
     });
 });
 
-export { getUsers, getBuyers, getFarmers, blockUser, getAnalytics };
+// @desc    Get user profile
+// @route   GET /api/users/profile
+// @access  Private
+const getUserProfile = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            aadhar: user.aadhar,
+            role: user.role,
+            location: user.location,
+            profileImage: user.profileImage,
+            isVerified: user.isVerified
+        });
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+export { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile };

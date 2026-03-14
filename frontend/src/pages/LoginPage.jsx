@@ -2,236 +2,97 @@ import { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { Mail, Lock, Sprout, Loader2, Tractor, ShoppingBag, UserCheck, ShieldCheck } from 'lucide-react';
-
-const ROLES = [
-    { id: 'Farmer', label: 'Farmer', icon: Tractor, desc: 'List and sell your crops' },
-    { id: 'Buyer', label: 'Buyer', icon: ShoppingBag, desc: 'Browse and purchase crops' },
-    { id: 'Agent', label: 'Agent', icon: UserCheck, desc: 'Verify crop listings' },
-];
+import { Sprout, Loader2 } from 'lucide-react';
 
 const LoginPage = () => {
-    const [step, setStep] = useState('role'); // 'role' | 'user' | 'admin'
-    const [selectedRole, setSelectedRole] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { login, adminLogin, user } = useContext(AuthContext);
+    const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+    const { loginWithGoogle, user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         if (user) {
-            navigate(`/dashboard/${user.role.toLowerCase()}`);
+            navigate(`/dashboard/${user.role?.toLowerCase() || 'farmer'}`);
         }
     }, [user, navigate]);
 
-    const handleRoleSelect = (role) => {
-        setSelectedRole(role);
-        setStep('user');
-    };
-
-    const handleUserLogin = async (e) => {
-        e.preventDefault();
-        if (!email || !password) {
-            toast.error('Please fill in all fields');
-            return;
-        }
+    const handleGoogleLogin = async () => {
         try {
-            setIsSubmitting(true);
-            await login(email, password);
+            setIsGoogleSubmitting(true);
+            const res = await loginWithGoogle();
+            
+            if (res.isNewUser) {
+                // The user needs to complete their profile (add role, phone, aadhar, location)
+                toast.info("Please complete your profile to finish registration.");
+                // We pass the google user details to the register page via state
+                navigate('/register', { state: { googleUser: res.user } });
+            } else {
+                toast.success('Logged in successfully!');
+                // navigation handled by useEffect
+            }
         } catch (error) {
-            // toast handled by api interceptor
+            console.error("Google Login Error:", error);
+            // toast might be handled in api interceptor, but we log it here just in case
         } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleAdminLogin = async (e) => {
-        e.preventDefault();
-        if (!email || !password) {
-            toast.error('Please fill in all fields');
-            return;
-        }
-        try {
-            setIsSubmitting(true);
-            await adminLogin(email, password);
-        } catch (error) {
-            // toast handled by api interceptor
-        } finally {
-            setIsSubmitting(false);
+            setIsGoogleSubmitting(false);
         }
     };
 
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
-            <div className="sm:mx-auto sm:w-full sm:max-w-lg">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center text-primary-600">
                     <Sprout className="h-12 w-12" />
                 </div>
                 <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-                    {step === 'admin' ? 'Admin Login' : step === 'user' ? `Login as ${selectedRole}` : 'Welcome Back'}
+                    Welcome back
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                    {step === 'role' && (
-                        <>Don&apos;t have an account?{' '}
-                            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-                                Register here
-                            </Link>
-                        </>
-                    )}
-                    {(step === 'user' || step === 'admin') && (
-                        <button onClick={() => { setStep('role'); setEmail(''); setPassword(''); }}
-                            className="font-medium text-primary-600 hover:text-primary-500">
-                            ← Back to role selection
-                        </button>
-                    )}
+                    Or{' '}
+                    <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
+                        create a new account
+                    </Link>
                 </p>
             </div>
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-                <div className="bg-white py-8 px-4 shadow-sm border border-gray-100 sm:rounded-2xl sm:px-10">
-
-                    {/* Step 1: Role Selection */}
-                    {step === 'role' && (
-                        <div className="space-y-4">
-                            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider text-center mb-6">Select your role to continue</p>
-                            <div className="grid grid-cols-1 gap-4">
-                                {ROLES.map(({ id, label, icon: Icon, desc }) => (
-                                    <button
-                                        key={id}
-                                        onClick={() => handleRoleSelect(id)}
-                                        className="flex items-center gap-4 p-4 border-2 border-gray-100 rounded-xl hover:border-primary-400 hover:bg-primary-50 transition-all text-left group"
-                                    >
-                                        <div className="h-12 w-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-200 transition-colors">
-                                            <Icon className="h-6 w-6" />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900">{label}</p>
-                                            <p className="text-sm text-gray-500">{desc}</p>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Admin login separator */}
-                            <div className="relative mt-6">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-gray-200" />
-                                </div>
-                                <div className="relative flex justify-center text-sm">
-                                    <span className="px-2 bg-white text-gray-400">or</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => { setStep('admin'); setEmail(''); setPassword(''); }}
-                                className="w-full flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all text-gray-700 font-semibold"
-                            >
-                                <ShieldCheck className="h-5 w-5 text-gray-500" />
-                                Admin Login
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Step 2a: User Login Form (Farmer/Buyer/Agent) */}
-                    {step === 'user' && (
-                        <form className="space-y-5" onSubmit={handleUserLogin}>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Email address</label>
-                                <div className="mt-1 relative rounded-md shadow-sm">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="input-field pl-10"
-                                        placeholder="you@example.com"
-                                        required
+            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="bg-white py-8 px-4 shadow-sm border border-gray-100 sm:rounded-2xl sm:px-10 text-center">
+                    <p className="text-gray-600 mb-6">Log in to your account using Google.</p>
+                    
+                    <button
+                        onClick={handleGoogleLogin}
+                        disabled={isGoogleSubmitting}
+                        className="w-full inline-flex items-center justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-base font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {isGoogleSubmitting ? (
+                            <Loader2 className="animate-spin h-5 w-5 text-gray-500" />
+                        ) : (
+                            <>
+                                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                                    <path
+                                        fill="currentColor"
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                        fillRule="evenodd"
                                     />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Password</label>
-                                <div className="mt-1 relative rounded-md shadow-sm">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="input-field pl-10"
-                                        placeholder="••••••••"
-                                        required
+                                    <path
+                                        fill="#34A853"
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                        fillRule="evenodd"
                                     />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : `Log in as ${selectedRole}`}
-                            </button>
-                        </form>
-                    )}
-
-                    {/* Step 2b: Admin Login Form */}
-                    {step === 'admin' && (
-                        <form className="space-y-5" onSubmit={handleAdminLogin}>
-                            <div className="flex items-center justify-center gap-2 mb-4">
-                                <ShieldCheck className="h-8 w-8 text-gray-600" />
-                                <p className="text-sm text-gray-500 text-center">Enter admin credentials to access the control panel.</p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Admin Email</label>
-                                <div className="mt-1 relative rounded-md shadow-sm">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="input-field pl-10"
-                                        placeholder="admin@farmearn.com"
-                                        required
+                                    <path
+                                        fill="#FBBC05"
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                        fillRule="evenodd"
                                     />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Admin Password</label>
-                                <div className="mt-1 relative rounded-md shadow-sm">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="input-field pl-10"
-                                        placeholder="••••••••"
-                                        required
+                                    <path
+                                        fill="#EA4335"
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                        fillRule="evenodd"
                                     />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : 'Login as Admin'}
-                            </button>
-                        </form>
-                    )}
-
+                                </svg>
+                                Sign in with Google
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

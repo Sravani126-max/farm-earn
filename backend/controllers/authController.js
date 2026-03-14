@@ -1,43 +1,45 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
-import generateToken from '../utils/generateToken.js';
 
-// Hard-coded admin credentials
-const ADMIN_EMAIL = 'sattenapallibhanuprakash84@gmail.com';
-const ADMIN_PASSWORD = 'Bhanu@7386730499';
-
-// @desc    Register a new user (no OTP, instant verification)
+// @desc    Register a new user (with Firebase UID)
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password, role, location, profileImage } = req.body;
+    const { name, email, phone, aadhar, firebaseUid, role, location, profileImage } = req.body;
 
-    const userExists = await User.findOne({ email });
+    // Check if user exists by email, phone, aadhar, or firebaseUid
+    const userExists = await User.findOne({ 
+        $or: [{ email }, { phone }, { aadhar }, { firebaseUid }] 
+    });
 
     if (userExists) {
         res.status(400);
-        throw new Error('User with this email already exists');
+        throw new Error('User with these credentials already exists in the database');
     }
 
-    // Create user directly as verified — no OTP required
     const user = await User.create({
         name,
         email,
-        password,
-        role: role || 'Farmer',
+        phone,
+        aadhar,
+        firebaseUid,
+        role,
         location,
         profileImage,
-        isVerified: true
+        isVerified: true // Assuming true as Firebase handles auth
     });
 
     if (user) {
         res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            isVerified: user.isVerified,
-            token: generateToken(user._id),
+            message: 'User profile created successfully.',
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                firebaseUid: user.firebaseUid
+            }
         });
     } else {
         res.status(400);
@@ -45,47 +47,32 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc    Auth user & get token (Farmer / Buyer / Agent)
+// @desc    Auth user & fetch profile (Using Firebase UID)
 // @route   POST /api/auth/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+    // We expect the frontend to send the firebaseUid after successful Firebase login
+    const { firebaseUid } = req.body;
 
-    const user = await User.findOne({ email }).select('+password');
+    if (!firebaseUid) {
+        res.status(400);
+        throw new Error('Firebase UID is required');
+    }
 
-    if (user && (await user.matchPassword(password))) {
+    const user = await User.findOne({ firebaseUid });
+
+    if (user) {
         res.json({
             _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
-            token: generateToken(user._id),
+            firebaseUid: user.firebaseUid
         });
     } else {
-        res.status(401);
-        throw new Error('Invalid email or password');
+        res.status(404);
+        throw new Error('User profile not found in database. Please register first.');
     }
 });
 
-// @desc    Admin login with hardcoded credentials
-// @route   POST /api/auth/admin-login
-// @access  Public
-const adminLogin = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        // Return a static admin user object with a token
-        res.json({
-            _id: 'admin-001',
-            name: 'Admin',
-            email: ADMIN_EMAIL,
-            role: 'Admin',
-            token: generateToken('admin-001'),
-        });
-    } else {
-        res.status(401);
-        throw new Error('Invalid admin credentials');
-    }
-});
-
-export { registerUser, authUser, adminLogin };
+export { registerUser, authUser };
