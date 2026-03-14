@@ -37,7 +37,10 @@ const registerUser = asyncHandler(async (req, res) => {
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
+                aadhar: user.aadhar,
                 role: user.role,
+                location: user.location,
+                profileImage: user.profileImage,
                 firebaseUid: user.firebaseUid
             }
         });
@@ -66,7 +69,11 @@ const authUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            phone: user.phone,
+            aadhar: user.aadhar,
             role: user.role,
+            location: user.location,
+            profileImage: user.profileImage,
             firebaseUid: user.firebaseUid
         });
     } else {
