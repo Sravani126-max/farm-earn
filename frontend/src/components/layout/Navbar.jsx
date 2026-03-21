@@ -181,8 +181,8 @@ const Navbar = () => {
                     ) : (
                         <>
                             <Link to="/login" className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">Log in</Link>
-                            <Link to="/register" className="btn-primary flex items-center gap-2 text-sm px-6">
-                                Join Now
+                            <Link to="/login" className="btn-primary flex items-center gap-2 text-sm px-6">
+                                Get Started
                             </Link>
                         </>
                     )}
@@ -218,7 +218,7 @@ const Navbar = () => {
                     ) : (
                         <div className="pt-4 flex flex-col gap-2">
                             <Link to="/login" onClick={() => setIsOpen(false)} className="block text-center px-3 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl">Log in</Link>
-                            <Link to="/register" onClick={() => setIsOpen(false)} className="block text-center px-3 py-3 text-base font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl">Register</Link>
+                            <Link to="/login" onClick={() => setIsOpen(false)} className="block text-center px-3 py-3 text-base font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl">Get Started</Link>
                         </div>
                     )}
                 </div>

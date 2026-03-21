@@ -34,7 +34,7 @@ const HomePage = () => {
                             Farm Earn connects farmers directly with buyers through a secure, verified digital marketplace. Real crops, real verification, real profit.
                         </p>
                         <div className="mt-10 flex space-x-4">
-                            <Link to="/register" className="btn-primary flex items-center px-8 py-4 text-lg">
+                            <Link to="/login" className="btn-primary flex items-center px-8 py-4 text-lg">
                                 Get Started <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>
                             <Link to="/marketplace" className="btn-outline flex items-center px-8 py-4 text-lg">
@@ -66,7 +66,7 @@ const HomePage = () => {
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
                     >
                         {[
-                            { icon: <Users />, title: "Join as Member", desc: "Register as a Farmer, Buyer, or Agent." },
+                            { icon: <Users />, title: "Join as Member", desc: "Sign in as a Farmer, Buyer, or Agent." },
                             { icon: <Sprout />, title: "List Your Crop", desc: "Farmers upload crop details and high-quality images." },
                             { icon: <ShieldCheck />, title: "Agent Verification", desc: "Professional agents verify the quality and status." },
                             { icon: <ShoppingCart />, title: "Secure Purchase", desc: "Buyers purchase verified crops with confidence." }
@@ -111,7 +111,7 @@ const HomePage = () => {
             <section className="bg-gray-900 py-20">
                 <div className="max-w-4xl mx-auto px-4 text-center">
                     <h2 className="text-3xl text-white font-bold mb-6 text-white">Ready to digitize your agricultural trade?</h2>
-                    <Link to="/register" className="btn-primary px-10 py-5 text-xl inline-block">Join Farm Earn Now</Link>
+                    <Link to="/login" className="btn-primary px-10 py-5 text-xl inline-block">Join Farm Earn Now</Link>
                 </div>
             </section>
         </div>
