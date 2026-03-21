@@ -5,12 +5,22 @@ import Crop from '../models/Crop.js';
 // @route   POST /api/crops/add-crop
 // @access  Private/Farmer
 const addCrop = asyncHandler(async (req, res) => {
-    const { cropName, quantity, price, harvestDate, cropImage, description, category, latitude, longitude, address } = req.body;
+    const { cropName, quantity, price, harvestDate, cropImage, description, farmingMethod, latitude, longitude } = req.body;
 
-    // Parse coordinates safely — default to [0,0] if not provided
-    const lat = latitude ? parseFloat(latitude) : 0;
-    const lng = longitude ? parseFloat(longitude) : 0;
+    if (!latitude || !longitude) {
+        res.status(400);
+        throw new Error('Location is required. Please enable location services.');
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
     const validCoords = !isNaN(lat) && !isNaN(lng) ? [lng, lat] : [0, 0];
+
+    // To prevent saving [0,0] if they bypassed JS validation
+    if (lat === 0 && lng === 0) {
+        res.status(400);
+        throw new Error('Valid location coordinates are required.');
+    }
 
     const crop = new Crop({
         cropName,
@@ -20,11 +30,11 @@ const addCrop = asyncHandler(async (req, res) => {
         harvestDate,
         cropImage: cropImage || '',
         description,
-        category,
+        farmingMethod: farmingMethod || 'Non-Organic',
         location: {
             type: 'Point',
             coordinates: validCoords,
-            address: address || ''
+            address: '' // Assuming we no longer manually accept address based on new constraints
         }
     });
 
@@ -87,6 +97,7 @@ const verifyCrop = asyncHandler(async (req, res) => {
     const crop = await Crop.findById(req.params.id);
 
     if (crop) {
+        const previousStatus = crop.status;
         crop.status = status;
         crop.agentVerification = {
             status: status === 'Verified' ? 'Verified' : 'Rejected',
@@ -96,6 +107,36 @@ const verifyCrop = asyncHandler(async (req, res) => {
         };
 
         const updatedCrop = await crop.save();
+
+        if (status === 'Verified' && previousStatus !== 'Verified') {
+            // Send notifications to nearby buyers and interested buyers
+            const Notification = (await import('../models/Notification.js')).default;
+            const User = (await import('../models/User.js')).default;
+            
+            // 1. Find interested buyers (matching crop name roughly)
+            const interestedBuyersQuery = {
+                role: 'Buyer',
+                interests: { $regex: new RegExp(crop.cropName, 'i') }
+            };
+
+            // 2. Find nearby buyers (within 50km roughly)
+            const [lng, lat] = crop.location.coordinates;
+            // Note: Users don't have geo-location stored natively in `location: {coordinates: []}` yet, 
+            // but we can query by their plain text location if needed, or just send to interested.
+            // For now, we will notify buyers who are interested.
+            
+            const buyersToNotify = await User.find(interestedBuyersQuery);
+            
+            if (buyersToNotify.length > 0) {
+                const notifications = buyersToNotify.map(buyer => ({
+                    userId: buyer._id,
+                    message: `A new crop '${crop.cropName}' you might be interested in has just been verified!`,
+                    cropId: crop._id
+                }));
+                await Notification.insertMany(notifications);
+            }
+        }
+
         res.json(updatedCrop);
     } else {
         res.status(404);

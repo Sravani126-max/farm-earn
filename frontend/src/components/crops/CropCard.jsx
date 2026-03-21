@@ -20,7 +20,7 @@ const CropCard = ({ crop, role }) => {
     };
 
     return (
-        <div className="card group hover:shadow-md transition-shadow duration-300">
+        <div className="card group hover:shadow-md transition-shadow duration-300 dark:bg-gray-800 dark:border-gray-700">
             <div className="relative aspect-video overflow-hidden">
                 <img
                     src={crop.cropImage}
@@ -35,25 +35,25 @@ const CropCard = ({ crop, role }) => {
 
             <div className="p-5">
                 <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{crop.cropName}</h3>
-                    <span className="text-primary-600 font-bold text-lg">₹{crop.price}/quintal</span>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-1">{crop.cropName}</h3>
+                    <span className="text-primary-600 dark:text-primary-400 font-bold text-lg">₹{crop.price}/quintal</span>
                 </div>
 
-                <div className="space-y-2 mb-4 text-sm text-gray-600">
+                <div className="space-y-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center">
-                        <Tag className="h-4 w-4 mr-2 text-gray-400" />
+                        <Tag className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                         <span>{crop.category}</span>
                     </div>
                     <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                        <Clock className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                         <span>Quantity: {crop.quantity} quintals</span>
                     </div>
                     <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                        <Calendar className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                         <span>Harvest: {new Date(crop.harvestDate).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                        <MapPin className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                         <span className="line-clamp-1">{crop.location}</span>
                     </div>
                 </div>

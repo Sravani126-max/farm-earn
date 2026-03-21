@@ -1,11 +1,12 @@
 import express from 'express';
-import { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile } from '../controllers/userController.js';
+import { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile, updateUserProfile } from '../controllers/userController.js';
 import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/profile', protect, getUserProfile);
-
+router.route('/profile')
+    .get(protect, getUserProfile)
+    .put(protect, updateUserProfile);
 router.route('/')
     .get(protect, authorizeRoles('Admin'), getUsers);
 

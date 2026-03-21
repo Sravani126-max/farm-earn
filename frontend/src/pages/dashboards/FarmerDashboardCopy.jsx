@@ -5,7 +5,7 @@ import CropCard from '../../components/crops/CropCard';
 import { Plus, X, Upload, Loader2, Package, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-const FarmerDashboard = () => {
+const FarmerDashboardCopy = () => {
     const { user } = useContext(AuthContext);
     const [crops, setCrops] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -268,4 +268,4 @@ const FarmerDashboard = () => {
     );
 };
 
-export default FarmerDashboard;
+export default FarmerDashboardCopy;

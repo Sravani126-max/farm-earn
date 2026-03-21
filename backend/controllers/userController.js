@@ -89,4 +89,39 @@ const getUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
-export { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile };
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+        user.name = req.body.name || user.name;
+        user.phone = req.body.phone || user.phone;
+        user.aadhar = req.body.aadhar || user.aadhar;
+        user.location = req.body.location || user.location;
+        
+        if (req.body.profileImage) {
+             user.profileImage = req.body.profileImage;
+        }
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            phone: updatedUser.phone,
+            aadhar: updatedUser.aadhar,
+            role: updatedUser.role,
+            location: updatedUser.location,
+            profileImage: updatedUser.profileImage,
+            isVerified: updatedUser.isVerified
+        });
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+export { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile, updateUserProfile };

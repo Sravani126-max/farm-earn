@@ -36,9 +36,14 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: [true, 'Please add a password'],
+            required: function() { return !this.firebaseUid; },
             minlength: 6,
             select: false,
+        },
+        firebaseUid: {
+            type: String,
+            unique: true,
+            sparse: true,
         },
         role: {
             type: String,
@@ -57,6 +62,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        interests: {
+            type: [String],
+            default: []
+        }
     },
     {
         timestamps: true,

@@ -32,10 +32,11 @@ const cropSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Please add a description'],
         },
-        category: {
+        farmingMethod: {
             type: String,
-            enum: ['Available Crops', 'Useful Crops', 'Crops Going To Sell'],
+            enum: ['Organic', 'Non-Organic'],
             required: true,
+            default: 'Non-Organic'
         },
         status: {
             type: String,
