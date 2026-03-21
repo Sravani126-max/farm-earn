@@ -16,6 +16,7 @@ import AgentDashboard from './pages/dashboards/AgentDashboard';
 import AdminDashboard from './pages/dashboards/AdminDashboard';
 import CropMarketplace from './pages/CropMarketplace';
 import ProfilePage from './pages/ProfilePage';
+import AboutPage from './pages/AboutPage';
 
 // Duplicated Dashboards
 import FarmerDashboardCopy from './pages/dashboards/FarmerDashboardCopy';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/create-profile" element={<ProfileCreationPage />} />
             <Route path="/marketplace" element={<CropMarketplace />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/about" element={<AboutPage />} />
 
             {/* Dashboards (will be protected later) */}
             <Route path="/dashboard/farmer" element={<FarmerDashboard />} />
