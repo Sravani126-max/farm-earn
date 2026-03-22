@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
+import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user (with Firebase UID)
 // @route   POST /api/auth/register
@@ -41,7 +42,8 @@ const registerUser = asyncHandler(async (req, res) => {
                 role: user.role,
                 location: user.location,
                 profileImage: user.profileImage,
-                firebaseUid: user.firebaseUid
+                firebaseUid: user.firebaseUid,
+                token: generateToken(user._id)
             }
         });
     } else {
@@ -74,7 +76,8 @@ const authUser = asyncHandler(async (req, res) => {
             role: user.role,
             location: user.location,
             profileImage: user.profileImage,
-            firebaseUid: user.firebaseUid
+            firebaseUid: user.firebaseUid,
+            token: generateToken(user._id)
         });
     } else {
         res.status(404);
