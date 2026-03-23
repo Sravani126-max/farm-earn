@@ -29,7 +29,8 @@ const LoginPage = () => {
                 navigate(`/dashboard/${result.data.role?.toLowerCase() || 'farmer'}`);
             }
         } catch (error) {
-            toast.error(error?.response?.data?.message || 'Failed to log in with Google.');
+            const errorMsg = error?.response?.data?.message || error?.message || 'Failed to log in with Google.';
+            toast.error(errorMsg !== 'Failed to log in with Google.' ? `Login Error: ${errorMsg}` : errorMsg);
         } finally {
             setIsSubmitting(false);
         }
