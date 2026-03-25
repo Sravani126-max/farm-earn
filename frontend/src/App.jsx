@@ -1,10 +1,13 @@
+import { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { AuthContext } from './context/AuthContext';
 
 // Layout & UI
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -18,12 +21,20 @@ import CropMarketplace from './pages/CropMarketplace';
 import ProfilePage from './pages/ProfilePage';
 import AboutPage from './pages/AboutPage';
 
-// Duplicated Dashboards
-import FarmerDashboardCopy from './pages/dashboards/FarmerDashboardCopy';
-import BuyerDashboardCopy from './pages/dashboards/BuyerDashboardCopy';
-import AgentDashboardCopy from './pages/dashboards/AgentDashboardCopy';
-import AdminDashboardCopy from './pages/dashboards/AdminDashboardCopy';
 function App() {
+  const { loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
@@ -34,20 +45,25 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/create-profile" element={<ProfileCreationPage />} />
             <Route path="/marketplace" element={<CropMarketplace />} />
-            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/about" element={<AboutPage />} />
 
-            {/* Dashboards (will be protected later) */}
-            <Route path="/dashboard/farmer" element={<FarmerDashboard />} />
-            <Route path="/dashboard/buyer" element={<BuyerDashboard />} />
-            <Route path="/dashboard/agent" element={<AgentDashboard />} />
-            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/profile" element={
+              <ProtectedRoute><ProfilePage /></ProtectedRoute>
+            } />
 
-            {/* Duplicated Dashboard Routes */}
-            <Route path="/dashboard/farmer-copy" element={<FarmerDashboardCopy />} />
-            <Route path="/dashboard/buyer-copy" element={<BuyerDashboardCopy />} />
-            <Route path="/dashboard/agent-copy" element={<AgentDashboardCopy />} />
-            <Route path="/dashboard/admin-copy" element={<AdminDashboardCopy />} />
+            {/* Protected Dashboards */}
+            <Route path="/dashboard/farmer" element={
+              <ProtectedRoute allowedRoles={['Farmer']}><FarmerDashboard /></ProtectedRoute>
+            } />
+            <Route path="/dashboard/buyer" element={
+              <ProtectedRoute allowedRoles={['Buyer']}><BuyerDashboard /></ProtectedRoute>
+            } />
+            <Route path="/dashboard/agent" element={
+              <ProtectedRoute allowedRoles={['Agent']}><AgentDashboard /></ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin" element={
+              <ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>
+            } />
           </Routes>
         </main>
         <Footer />

@@ -2,11 +2,21 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 
+// Emails that are automatically assigned Admin role
+const ADMIN_EMAILS = [
+    'ramaiah5496@gmail.com',
+    'pavankumartalla99@gmail.com',
+    'sattenapallibhanuprakash@gmail.com'
+];
+
 // @desc    Register a new user (with Firebase UID)
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, phone, aadhar, firebaseUid, role, location, profileImage } = req.body;
+
+    // Auto-assign Admin role for specific emails
+    const finalRole = ADMIN_EMAILS.includes(email?.toLowerCase()) ? 'Admin' : role;
 
     // Check if user exists by email, phone, aadhar, or firebaseUid
     const existingUsers = await User.find({ 
@@ -32,7 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
         phone,
         aadhar,
         firebaseUid,
-        role,
+        role: finalRole,
         location,
         profileImage,
         isVerified: true // Assuming true as Firebase handles auth
@@ -75,6 +85,12 @@ const authUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ firebaseUid });
 
     if (user) {
+        // Auto-upgrade role to Admin for designated admin emails
+        if (ADMIN_EMAILS.includes(user.email?.toLowerCase()) && user.role !== 'Admin') {
+            user.role = 'Admin';
+            await user.save();
+        }
+
         res.json({
             _id: user._id,
             name: user.name,

@@ -54,7 +54,7 @@ const CropCard = ({ crop, role }) => {
                     </div>
                     <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
-                        <span className="line-clamp-1">{crop.location}</span>
+                        <span className="line-clamp-1">{crop.location?.address || 'No location'}</span>
                     </div>
                 </div>
 

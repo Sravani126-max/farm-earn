@@ -37,25 +37,25 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="flex justify-center text-primary-600">
+                <div className="flex justify-center text-primary-600 dark:text-primary-400">
                     <Sprout className="h-12 w-12" />
                 </div>
-                <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
+                <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                     Welcome to Farm Earn
                 </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
+                <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
                     Sign in to continue
                 </p>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow-sm border border-gray-100 sm:rounded-2xl sm:px-10">
+                <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow-sm border border-gray-100 dark:border-gray-700 sm:rounded-2xl sm:px-10 transition-colors duration-200">
                     <button
                         onClick={handleGoogleLogin}
                         disabled={isSubmitting}
-                        className="w-full inline-flex items-center justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
+                        className="w-full inline-flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-base font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 transition-colors"
                     >
                         {isSubmitting ? (
                             <Loader2 className="animate-spin h-5 w-5 mr-3" />

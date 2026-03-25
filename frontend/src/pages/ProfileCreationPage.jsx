@@ -196,8 +196,6 @@ const ProfileCreationPage = () => {
                                         >
                                             <option value="Farmer">Farmer</option>
                                             <option value="Buyer">Buyer</option>
-                                            <option value="Agent">Agent</option>
-                                            <option value="Admin">Admin</option>
                                         </select>
                                     </div>
                                 </div>

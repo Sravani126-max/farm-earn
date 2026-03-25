@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { Sprout, LogOut, User, LayoutDashboard, Menu, X, Settings, Moon, Sun, Bell } from 'lucide-react';
+import { Sprout, LogOut, User, LayoutDashboard, Menu, X, Settings, Moon, Sun, Bell, ShieldCheck } from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext';
 import api from '../../utils/api';
 
@@ -79,6 +79,17 @@ const Navbar = () => {
 
                     {user ? (
                         <div className="flex items-center space-x-4">
+                            {/* Admin Controls Button - Only for Admin users */}
+                            {user.role === 'Admin' && (
+                                <Link
+                                    to="/dashboard/admin"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm"
+                                >
+                                    <ShieldCheck className="h-4 w-4" />
+                                    Admin Controls
+                                </Link>
+                            )}
+
                             {/* Notifications Dropdown */}
                             <div className="relative">
                                 <button
@@ -206,6 +217,16 @@ const Navbar = () => {
             {/* Mobile nav */}
             {isOpen && (
                 <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-4 pt-2 pb-6 space-y-2 shadow-lg">
+                    {user?.role === 'Admin' && (
+                        <Link 
+                            to="/dashboard/admin" 
+                            onClick={() => setIsOpen(false)} 
+                            className="block px-3 py-3 text-base font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl mb-4 flex items-center justify-center gap-2 shadow-md"
+                        >
+                            <ShieldCheck className="h-5 w-5" />
+                            Admin Control Panel
+                        </Link>
+                    )}
                     <Link to="/" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Home</Link>
                     <Link to="/marketplace" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Marketplace</Link>
                     {user ? (

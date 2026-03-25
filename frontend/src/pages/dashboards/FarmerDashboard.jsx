@@ -217,7 +217,7 @@ const FarmerDashboard = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Capture Crop Image & Location <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Crop Image & Location <span className="text-red-500">*</span></label>
                                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-xl hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
                                     {formData.cropImage ? (
                                         <div className="relative w-full aspect-video rounded-lg overflow-hidden">
@@ -240,11 +240,11 @@ const FarmerDashboard = () => {
                                             </div>
                                             <div className="text-sm text-gray-600 dark:text-gray-400">
                                                 <label className="relative cursor-pointer rounded-md font-bold text-primary-600 dark:text-primary-400 hover:text-primary-500">
-                                                    <span>Open Camera to Capture Image</span>
-                                                    <input required type="file" className="sr-only" onChange={handleImageUpload} accept="image/*" capture="environment" />
+                                                    <span>Click to upload crop image</span>
+                                                    <input required type="file" className="sr-only" onChange={handleImageUpload} accept="image/*" />
                                                 </label>
                                             </div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-500">Must be captured live. Location will be automatically attached.</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-500">Choose from gallery or take a photo. Location will be automatically attached.</p>
                                         </div>
                                     )}
                                 </div>

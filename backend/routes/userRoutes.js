@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile, updateUserProfile } from '../controllers/userController.js';
+import { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile, updateUserProfile, addAgent, getAgents } from '../controllers/userController.js';
 import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -12,6 +12,8 @@ router.route('/')
 
 router.get('/buyers', protect, authorizeRoles('Admin'), getBuyers);
 router.get('/farmers', protect, authorizeRoles('Admin'), getFarmers);
+router.get('/agents', protect, authorizeRoles('Admin'), getAgents);
+router.post('/add-agent', protect, authorizeRoles('Admin'), addAgent);
 router.get('/analytics', protect, authorizeRoles('Admin'), getAnalytics);
 
 router.route('/:id/block')

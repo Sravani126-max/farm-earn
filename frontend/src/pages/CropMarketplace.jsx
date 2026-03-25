@@ -26,8 +26,9 @@ const CropMarketplace = () => {
     };
 
     const filteredCrops = crops.filter(crop => {
+        const locationStr = crop.location?.address || '';
         const matchesSearch = crop.cropName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            crop.location.toLowerCase().includes(searchQuery.toLowerCase());
+            locationStr.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = categoryFilter === 'All' || crop.category === categoryFilter;
         return matchesSearch && matchesCategory;
     });

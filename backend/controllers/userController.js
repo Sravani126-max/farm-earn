@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import crypto from 'crypto';
 import User from '../models/User.js';
 
 // @desc    Get all users
@@ -124,4 +125,60 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
-export { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile, updateUserProfile };
+// @desc    Add a new agent (Admin only)
+// @route   POST /api/users/add-agent
+// @access  Private/Admin
+const addAgent = asyncHandler(async (req, res) => {
+    const { name, email, phone } = req.body;
+
+    if (!name || !email || !phone) {
+        res.status(400);
+        throw new Error('Please provide name, email, and phone number');
+    }
+
+    // Check if user with this email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        res.status(400);
+        throw new Error('A user with this email already exists');
+    }
+
+    const agent = await User.create({
+        name,
+        email,
+        phone,
+        password: crypto.randomBytes(16).toString('hex'),
+        role: 'Agent',
+        location: 'To be updated',
+        aadhar: '000000000000',
+        isVerified: true,
+    });
+
+    if (agent) {
+        res.status(201).json({
+            message: 'Agent added successfully',
+            agent: {
+                _id: agent._id,
+                name: agent.name,
+                email: agent.email,
+                phone: agent.phone,
+                role: agent.role,
+                location: agent.location,
+                isVerified: agent.isVerified,
+            }
+        });
+    } else {
+        res.status(400);
+        throw new Error('Failed to create agent');
+    }
+});
+
+// @desc    Get all agents
+// @route   GET /api/users/agents
+// @access  Private/Admin
+const getAgents = asyncHandler(async (req, res) => {
+    const agents = await User.find({ role: 'Agent' });
+    res.json(agents);
+});
+
+export { getUsers, getBuyers, getFarmers, blockUser, getAnalytics, getUserProfile, updateUserProfile, addAgent, getAgents };
