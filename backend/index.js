@@ -48,7 +48,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Basic route
 app.get('/api', (req, res) => {
-    res.send('Farm Earn API is running...');
+    res.send('Farm Earn API is LIVE - Update Ver 1.2');
 });
 
 // Diagnostic endpoint to list all routes
