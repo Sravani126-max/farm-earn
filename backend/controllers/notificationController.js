@@ -1,11 +1,11 @@
 import asyncHandler from 'express-async-handler';
-import Notification from '../models/Notification.js';
+import mongoose from 'mongoose';
 
 // @desc    Get logged in user's notifications
 // @route   GET /api/notifications
 // @access  Private
 export const getNotifications = asyncHandler(async (req, res) => {
-    const notifications = await Notification.find({ userId: req.user._id })
+    const notifications = await mongoose.model('Notification').find({ userId: req.user._id })
         .sort({ createdAt: -1 })
         .limit(20);
     res.json(notifications);
@@ -15,7 +15,7 @@ export const getNotifications = asyncHandler(async (req, res) => {
 // @route   PUT /api/notifications/:id/read
 // @access  Private
 export const markNotificationAsRead = asyncHandler(async (req, res) => {
-    const notification = await Notification.findById(req.params.id);
+    const notification = await mongoose.model('Notification').findById(req.params.id);
 
     if (notification) {
         if (notification.userId.toString() !== req.user._id.toString()) {

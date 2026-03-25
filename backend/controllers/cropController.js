@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler';
-import Crop from '../models/Crop.js';
+import mongoose from 'mongoose';
 
 // @desc    Create a new crop listing
 // @route   POST /api/crops/add-crop
@@ -22,7 +22,7 @@ const addCrop = asyncHandler(async (req, res) => {
         throw new Error('Valid location coordinates are required.');
     }
 
-    const crop = new Crop({
+    const crop = new (mongoose.model('Crop'))({
         cropName,
         farmerId: req.user._id,
         quantity,
@@ -76,7 +76,7 @@ const getAllCrops = asyncHandler(async (req, res) => {
     }
     // Farmers use /farmer-crops endpoint
 
-    const crops = await Crop.find(query).populate('farmerId', 'name email location profileImage phone');
+    const crops = await mongoose.model('Crop').find(query).populate('farmerId', 'name email location profileImage phone');
     res.json(crops);
 });
 
@@ -84,7 +84,7 @@ const getAllCrops = asyncHandler(async (req, res) => {
 // @route   GET /api/crops/farmer-crops
 // @access  Private/Farmer
 const getFarmerCrops = asyncHandler(async (req, res) => {
-    const crops = await Crop.find({ farmerId: req.user._id });
+    const crops = await mongoose.model('Crop').find({ farmerId: req.user._id });
     res.json(crops);
 });
 
@@ -94,7 +94,7 @@ const getFarmerCrops = asyncHandler(async (req, res) => {
 const verifyCrop = asyncHandler(async (req, res) => {
     const { status, report, inspectionImages } = req.body;
 
-    const crop = await Crop.findById(req.params.id);
+    const crop = await mongoose.model('Crop').findById(req.params.id);
 
     if (crop) {
         const previousStatus = crop.status;
@@ -110,8 +110,8 @@ const verifyCrop = asyncHandler(async (req, res) => {
 
         if (status === 'Verified' && previousStatus !== 'Verified') {
             // Send notifications to nearby buyers and interested buyers
-            const Notification = (await import('../models/Notification.js')).default;
-            const User = (await import('../models/User.js')).default;
+            const Notification = mongoose.model('Notification');
+            const User = mongoose.model('User');
             
             // 1. Find interested buyers (matching crop name roughly)
             const interestedBuyersQuery = {
@@ -148,7 +148,7 @@ const verifyCrop = asyncHandler(async (req, res) => {
 // @route   DELETE /api/crops/:id
 // @access  Private/Farmer or Admin
 const deleteCrop = asyncHandler(async (req, res) => {
-    const crop = await Crop.findById(req.params.id);
+    const crop = await mongoose.model('Crop').findById(req.params.id);
 
     if (crop) {
         if (crop.farmerId.toString() !== req.user._id.toString() && req.user.role !== 'Admin') {

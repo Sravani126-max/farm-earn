@@ -1,12 +1,12 @@
 import asyncHandler from 'express-async-handler';
 import crypto from 'crypto';
-import User from '../models/User.js';
+import mongoose from 'mongoose';
 
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private/Admin
 const getUsers = asyncHandler(async (req, res) => {
-    const users = await User.find({});
+    const users = await mongoose.model('User').find({});
     res.json(users);
 });
 
@@ -14,7 +14,7 @@ const getUsers = asyncHandler(async (req, res) => {
 // @route   GET /api/users/buyers
 // @access  Private/Admin
 const getBuyers = asyncHandler(async (req, res) => {
-    const buyers = await User.find({ role: 'Buyer' });
+    const buyers = await mongoose.model('User').find({ role: 'Buyer' });
     res.json(buyers);
 });
 
@@ -22,7 +22,7 @@ const getBuyers = asyncHandler(async (req, res) => {
 // @route   GET /api/users/farmers
 // @access  Private/Admin
 const getFarmers = asyncHandler(async (req, res) => {
-    const farmers = await User.find({ role: 'Farmer' });
+    const farmers = await mongoose.model('User').find({ role: 'Farmer' });
     res.json(farmers);
 });
 
@@ -30,7 +30,7 @@ const getFarmers = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/:id/block
 // @access  Private/Admin
 const blockUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.id);
+    const user = await mongoose.model('User').findById(req.params.id);
 
     if (user) {
         // Toggle the isVerified status - could also add a dedicated 'isBlocked' field later if needed
@@ -51,10 +51,10 @@ const blockUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/analytics
 // @access  Private/Admin
 const getAnalytics = asyncHandler(async (req, res) => {
-    const totalUsers = await User.countDocuments();
-    const farmers = await User.countDocuments({ role: 'Farmer' });
-    const buyers = await User.countDocuments({ role: 'Buyer' });
-    const agents = await User.countDocuments({ role: 'Agent' });
+    const totalUsers = await mongoose.model('User').countDocuments();
+    const farmers = await mongoose.model('User').countDocuments({ role: 'Farmer' });
+    const buyers = await mongoose.model('User').countDocuments({ role: 'Buyer' });
+    const agents = await mongoose.model('User').countDocuments({ role: 'Agent' });
 
     // We would ideally import Crop and get stats there too
 
@@ -70,7 +70,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await mongoose.model('User').findById(req.user._id);
 
     if (user) {
         res.json({
@@ -94,7 +94,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await mongoose.model('User').findById(req.user._id);
 
     if (user) {
         user.name = req.body.name || user.name;
@@ -137,13 +137,13 @@ const addAgent = asyncHandler(async (req, res) => {
     }
 
     // Check if user with this email already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await mongoose.model('User').findOne({ email });
     if (existingUser) {
         res.status(400);
         throw new Error('A user with this email already exists');
     }
 
-    const agent = await User.create({
+    const agent = await mongoose.model('User').create({
         name,
         email,
         phone,
@@ -177,7 +177,7 @@ const addAgent = asyncHandler(async (req, res) => {
 // @route   GET /api/users/agents
 // @access  Private/Admin
 const getAgents = asyncHandler(async (req, res) => {
-    const agents = await User.find({ role: 'Agent' });
+    const agents = await mongoose.model('User').find({ role: 'Agent' });
     res.json(agents);
 });
 
