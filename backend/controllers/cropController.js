@@ -39,6 +39,53 @@ const addCrop = asyncHandler(async (req, res) => {
     });
 
     const createdCrop = await crop.save();
+
+    // Notify agents based on location priority
+    try {
+        const User = (await import('../models/User.js')).default;
+        const Notification = (await import('../models/Notification.js')).default;
+        
+        // 1. Find agents within 50km of the crop
+        let agents = await User.find({
+            role: 'Agent',
+            locationCoordinates: {
+                $near: {
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: validCoords
+                    },
+                    $maxDistance: 50000 // 50km in meters
+                }
+            }
+        });
+
+        // 2. If no agents within 50km, fall back to matching by location string
+        if (agents.length === 0) {
+            // Try to match by city/state if we have a farmer location
+            const farmerLocation = req.user.location || '';
+            agents = await User.find({
+                role: 'Agent',
+                location: { $regex: new RegExp(farmerLocation, 'i') }
+            });
+        }
+
+        // 3. Final fallback: notify all agents if still none found
+        if (agents.length === 0) {
+            agents = await User.find({ role: 'Agent' });
+        }
+        
+        if (agents.length > 0) {
+            const notifications = agents.map(agent => ({
+                userId: agent._id,
+                message: `New crop '${createdCrop.cropName}' uploaded near ${req.user.location || 'your area'} requires verification.`,
+                cropId: createdCrop._id
+            }));
+            await Notification.insertMany(notifications);
+        }
+    } catch (error) {
+        console.error('Error sending prioritized notifications to agents:', error);
+    }
+
     res.status(201).json(createdCrop);
 });
 

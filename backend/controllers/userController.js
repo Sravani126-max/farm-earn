@@ -33,13 +33,13 @@ const blockUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
-        // Toggle the isVerified status - could also add a dedicated 'isBlocked' field later if needed
-        user.isVerified = !user.isVerified;
+        // Toggle the isBlocked status
+        user.isBlocked = !user.isBlocked;
         const updatedUser = await user.save();
 
         res.json({
-            message: `User ${updatedUser.name} has been ${updatedUser.isVerified ? 'unblocked/verified' : 'blocked/unverified'}`,
-            isVerified: updatedUser.isVerified
+            message: `User ${updatedUser.name} has been ${updatedUser.isBlocked ? 'blocked' : 'unblocked'}`,
+            isBlocked: updatedUser.isBlocked
         });
     } else {
         res.status(404);
@@ -82,7 +82,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
             role: user.role,
             location: user.location,
             profileImage: user.profileImage,
-            isVerified: user.isVerified
+            isVerified: user.isVerified,
+            isBlocked: user.isBlocked
         });
     } else {
         res.status(404);
@@ -102,6 +103,13 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         user.aadhar = req.body.aadhar || user.aadhar;
         user.location = req.body.location || user.location;
         
+        if (req.body.latitude && req.body.longitude) {
+            user.locationCoordinates = {
+                type: 'Point',
+                coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)]
+            };
+        }
+
         if (req.body.profileImage) {
              user.profileImage = req.body.profileImage;
         }
@@ -117,7 +125,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             role: updatedUser.role,
             location: updatedUser.location,
             profileImage: updatedUser.profileImage,
-            isVerified: updatedUser.isVerified
+            isVerified: updatedUser.isVerified,
+            isBlocked: updatedUser.isBlocked
         });
     } else {
         res.status(404);
@@ -129,7 +138,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @route   POST /api/users/add-agent
 // @access  Private/Admin
 const addAgent = asyncHandler(async (req, res) => {
-    const { name, email, phone } = req.body;
+    const { name, email, phone, location, latitude, longitude } = req.body;
 
     if (!name || !email || !phone) {
         res.status(400);
@@ -149,7 +158,11 @@ const addAgent = asyncHandler(async (req, res) => {
         phone,
         password: crypto.randomBytes(16).toString('hex'),
         role: 'Agent',
-        location: 'Verified Agent Office',
+        location: location || 'Verified Agent Office',
+        locationCoordinates: {
+            type: 'Point',
+            coordinates: [longitude ? parseFloat(longitude) : 0, latitude ? parseFloat(latitude) : 0]
+        },
         aadhar: '000000000000', // Default placeholder
         isVerified: true,
     });

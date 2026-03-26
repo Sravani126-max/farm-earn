@@ -19,6 +19,11 @@ const protect = asyncHandler(async (req, res, next) => {
                 throw new Error('Not authorized, user not found in database');
             }
 
+            if (req.user.isBlocked) {
+                res.status(403);
+                throw new Error('Account is blocked. Please contact admin.');
+            }
+
             next();
         } catch (error) {
             console.error(error);

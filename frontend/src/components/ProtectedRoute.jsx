@@ -11,6 +11,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         return <Navigate to="/login" replace />;
     }
 
+    if (user.isBlocked) {
+        return <Navigate to="/login" replace />;
+    }
+
     if (allowedRoles && !allowedRoles.includes(user.role)) {
         // Redirect to their own dashboard if they try accessing wrong role's page
         return <Navigate to={`/dashboard/${user.role.toLowerCase()}`} replace />;

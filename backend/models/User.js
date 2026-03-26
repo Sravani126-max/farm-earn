@@ -54,6 +54,17 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Please add a location'],
         },
+        locationCoordinates: {
+            type: {
+                type: String,
+                enum: ['Point'],
+                default: 'Point',
+            },
+            coordinates: {
+                type: [Number],
+                default: [0, 0],
+            },
+        },
         profileImage: {
             type: String,
             default: 'no-photo.jpg',
@@ -65,12 +76,19 @@ const userSchema = new mongoose.Schema(
         interests: {
             type: [String],
             default: []
+        },
+        isBlocked: {
+            type: Boolean,
+            default: false,
         }
     },
     {
         timestamps: true,
     }
 );
+
+// Add 2dsphere index for locationCoordinates
+userSchema.index({ locationCoordinates: '2dsphere' });
 
 // Hash password before saving
 userSchema.pre('save', async function () {

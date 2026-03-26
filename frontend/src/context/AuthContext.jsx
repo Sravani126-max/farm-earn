@@ -17,12 +17,13 @@ export const AuthProvider = ({ children }) => {
 
             if (storedToken && storedUser) {
                 try {
-                    setUser(JSON.parse(storedUser));
+                    // Fetch latest profile to ensure they aren't blocked
+                    const res = await api.get('/users/profile');
+                    setUser(res.data);
+                    localStorage.setItem('user', JSON.stringify(res.data));
                 } catch (error) {
-                    console.error("Error parsing user profile:", error);
-                    setUser(null);
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
+                    console.error("Auth check failed:", error);
+                    logout(); // handles 401/403 via interceptor too, but good to be explicit
                 }
             }
             setLoading(false);

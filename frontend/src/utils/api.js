@@ -49,11 +49,14 @@ api.interceptors.response.use(
             toast.error(message);
         }
 
-        // Optional: Logout if token is expired or unauthorized
-        if (error.response?.status === 401) {
+        // Optional: Logout if token is expired, unauthorized, or user is blocked (403)
+        if (error.response?.status === 401 || error.response?.status === 403) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            // window.location.href = '/login'; 
+            // If it's a 403, we should redirect to login since they are blocked
+            if (error.response?.status === 403) {
+                window.location.href = '/login';
+            }
         }
 
         return Promise.reject(error);

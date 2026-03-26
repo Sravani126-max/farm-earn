@@ -106,6 +106,11 @@ const authUser = asyncHandler(async (req, res) => {
             await user.save();
         }
 
+        if (user.isBlocked) {
+            res.status(403);
+            throw new Error('Account is blocked. Please contact admin.');
+        }
+
         res.json({
             _id: user._id,
             name: user.name,

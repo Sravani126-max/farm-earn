@@ -46,10 +46,10 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleBlockUser = async (id, currentStatus) => {
+    const handleBlockUser = async (id, currentBlockedStatus) => {
         try {
             await api.put(`/users/${id}/block`);
-            toast.success(`User ${currentStatus ? 'blocked' : 'unblocked'} successfully`);
+            toast.success(`User ${!currentBlockedStatus ? 'blocked' : 'unblocked'} successfully`);
             fetchData();
         } catch (error) {
             // handled
@@ -248,18 +248,18 @@ const AdminDashboard = () => {
                                             <td className="px-6 py-4 font-medium text-gray-900">{agent.name}</td>
                                             <td className="px-6 py-4 text-sm text-gray-500">{agent.email}</td>
                                             <td className="px-6 py-4 text-sm text-gray-500">{agent.phone}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${agent.isVerified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {agent.isVerified ? 'Active' : 'Blocked'}
+                                             <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${!agent.isBlocked ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {!agent.isBlocked ? 'Active' : 'Blocked'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
-                                                    onClick={() => handleBlockUser(agent._id, agent.isVerified)}
-                                                    className={`p-2 rounded-lg transition-colors ${agent.isVerified ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
-                                                    title={agent.isVerified ? 'Block Agent' : 'Unblock Agent'}
+                                                    onClick={() => handleBlockUser(agent._id, agent.isBlocked)}
+                                                    className={`p-2 rounded-lg transition-colors ${!agent.isBlocked ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                                                    title={!agent.isBlocked ? 'Block Agent' : 'Unblock Agent'}
                                                 >
-                                                    {agent.isVerified ? <UserX className="h-5 w-5" /> : <UserCheck className="h-5 w-5" />}
+                                                    {!agent.isBlocked ? <UserX className="h-5 w-5" /> : <UserCheck className="h-5 w-5" />}
                                                 </button>
                                             </td>
                                         </tr>
@@ -317,18 +317,18 @@ const AdminDashboard = () => {
                                         <td className="px-6 py-4 font-medium text-gray-900">{user.name}</td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{user.email}</td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{user.role}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.isVerified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {user.isVerified ? 'Active' : 'Blocked'}
+                                         <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${!user.isBlocked ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {!user.isBlocked ? 'Active' : 'Blocked'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <button
-                                                onClick={() => handleBlockUser(user._id, user.isVerified)}
-                                                className={`p-2 rounded-lg transition-colors ${user.isVerified ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
-                                                title={user.isVerified ? 'Block User' : 'Unblock User'}
+                                                onClick={() => handleBlockUser(user._id, user.isBlocked)}
+                                                className={`p-2 rounded-lg transition-colors ${!user.isBlocked ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                                                title={!user.isBlocked ? 'Block User' : 'Unblock User'}
                                             >
-                                                {user.isVerified ? <UserX className="h-5 w-5" /> : <UserCheck className="h-5 w-5" />}
+                                                {!user.isBlocked ? <UserX className="h-5 w-5" /> : <UserCheck className="h-5 w-5" />}
                                             </button>
                                         </td>
                                     </tr>
