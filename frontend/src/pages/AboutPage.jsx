@@ -19,6 +19,24 @@ const AboutPage = () => {
             role: "Ideator",
             icon: <Users className="h-10 w-10 text-green-600" />,
             description: "Building the foundation of trust and collaboration in our ecosystem."
+        },
+        {
+            name: "Jyothi",
+            role: "Crew Member",
+            icon: <Users className="h-10 w-10 text-purple-600" />,
+            description: "Dedicated to supporting and scaling the Farm Earn platform daily."
+        },
+        {
+            name: "Manikanta",
+            role: "Crew Member",
+            icon: <Users className="h-10 w-10 text-orange-600" />,
+            description: "Bringing operational excellence to the Farm Earn mission."
+        },
+        {
+            name: "Madhav",
+            role: "Crew Member",
+            icon: <Users className="h-10 w-10 text-teal-600" />,
+            description: "Ensuring high-quality execution for our agricultural community."
         }
     ];
 
