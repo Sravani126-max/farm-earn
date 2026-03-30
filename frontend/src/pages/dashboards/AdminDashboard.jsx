@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import {
     Users, Sprout, TrendingUp, BarChart3, ShieldAlert, CheckCircle,
-    Trash2, UserX, UserCheck, Loader2, Search, UserPlus, Phone, Mail, User
+    Trash2, UserX, UserCheck, Loader2, Search, UserPlus, Phone, Mail, User, MapPin
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     // Add Agent form state
-    const [agentForm, setAgentForm] = useState({ name: '', email: '', phone: '' });
+    const [agentForm, setAgentForm] = useState({ name: '', email: '', phone: '', location: '' });
     const [addingAgent, setAddingAgent] = useState(false);
 
     useEffect(() => {
@@ -81,7 +81,7 @@ const AdminDashboard = () => {
             setAddingAgent(true);
             await api.post('/users/add-agent', agentForm);
             toast.success('Agent added successfully!');
-            setAgentForm({ name: '', email: '', phone: '' });
+            setAgentForm({ name: '', email: '', phone: '', location: '' });
             fetchData(); // Refresh agents list
         } catch (error) {
             // handled by interceptor
@@ -198,6 +198,19 @@ const AdminDashboard = () => {
                                     placeholder="Phone (10 digits)"
                                     value={agentForm.phone}
                                     onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
+                                    className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-10 p-3"
+                                    required
+                                />
+                            </div>
+                            <div className="relative sm:col-span-3">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <MapPin className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Agent Office Location (e.g. Village, District)"
+                                    value={agentForm.location}
+                                    onChange={(e) => setAgentForm({ ...agentForm, location: e.target.value })}
                                     className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-10 p-3"
                                     required
                                 />

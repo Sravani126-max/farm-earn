@@ -65,7 +65,7 @@ const ProfileCreationPage = () => {
             setIsSubmitting(true);
             const res = await registerProfile(formData);
             toast.success('Profile created successfully!');
-            navigate(`/dashboard/${res.user?.role?.toLowerCase() || formData.role.toLowerCase()}`);
+            // Navigation is handled by the useEffect hook once the AuthContext updates
         } catch (error) {
             // Error typically handled by api interceptor
             toast.error(error?.response?.data?.message || 'Failed to create profile.');

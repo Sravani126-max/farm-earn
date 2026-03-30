@@ -138,7 +138,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @route   POST /api/users/add-agent
 // @access  Private/Admin
 const addAgent = asyncHandler(async (req, res) => {
-    const { name, email, phone, location, latitude, longitude } = req.body;
+    const { name, email: rawEmail, phone, location, latitude, longitude } = req.body;
+    const email = rawEmail?.toLowerCase();
 
     if (!name || !email || !phone) {
         res.status(400);
@@ -161,7 +162,10 @@ const addAgent = asyncHandler(async (req, res) => {
         location: location || 'Verified Agent Office',
         locationCoordinates: {
             type: 'Point',
-            coordinates: [longitude ? parseFloat(longitude) : 0, latitude ? parseFloat(latitude) : 0]
+            coordinates: [
+                longitude ? parseFloat(longitude) : 0, 
+                latitude ? parseFloat(latitude) : 0
+            ]
         },
         aadhar: '000000000000', // Default placeholder
         isVerified: true,

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from './context/AuthContext';
@@ -20,6 +20,14 @@ import AdminDashboard from './pages/dashboards/AdminDashboard';
 import CropMarketplace from './pages/CropMarketplace';
 import ProfilePage from './pages/ProfilePage';
 import AboutPage from './pages/AboutPage';
+
+// Simple dashboard redirector
+const DashboardRedirect = () => {
+  const { user, loading } = useContext(AuthContext);
+  if (loading) return null; 
+  if (!user) return <Navigate to="/login" />;
+  return <Navigate to={`/dashboard/${user.role.toLowerCase()}`} />;
+};
 
 function App() {
   const { loading } = useContext(AuthContext);
@@ -64,6 +72,9 @@ function App() {
             <Route path="/dashboard/admin" element={
               <ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>
             } />
+            
+            {/* Generic Dashboard Redirect */}
+            <Route path="/dashboard" element={<DashboardRedirect />} />
           </Routes>
         </main>
         <Footer />

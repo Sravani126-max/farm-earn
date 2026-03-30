@@ -47,36 +47,37 @@ const FarmerDashboard = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Mandate geolocation
+        const uploadFile = async (lat = 0, lng = 0) => {
+            const imgData = new FormData();
+            imgData.append('image', file);
+            try {
+                setUploading(true);
+                const res = await api.post('/upload', imgData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                setFormData(prev => ({ ...prev, cropImage: res.data.imageUrl, latitude: lat, longitude: lng }));
+                toast.success('Image uploaded successfully!' + (lat !== 0 ? ' Location captured.' : ''));
+            } catch (error) {
+                toast.error('Image upload failed. Please try again.');
+            } finally {
+                setUploading(false);
+            }
+        };
+
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const { latitude, longitude } = position.coords;
-                    setFormData(prev => ({ ...prev, latitude, longitude }));
-                    
-                    const imgData = new FormData();
-                    imgData.append('image', file);
-
-                    try {
-                        setUploading(true);
-                        const res = await api.post('/upload', imgData, {
-                            headers: { 'Content-Type': 'multipart/form-data' }
-                        });
-                        setFormData(prev => ({ ...prev, cropImage: res.data.imageUrl, latitude, longitude }));
-                        toast.success('Image and location captured successfully!');
-                    } catch (error) {
-                        toast.error('Image upload failed. Please try again.');
-                    } finally {
-                        setUploading(false);
-                    }
+                    await uploadFile(latitude, longitude);
                 },
-                (error) => {
-                    toast.error('Location access denied. Location is required to list a crop.');
-                    // Don't upload if location denied
-                }
+                async (error) => {
+                    toast.info('Location access denied. Uploading image without GPS data.');
+                    await uploadFile();
+                },
+                { timeout: 10000 }
             );
         } else {
-            toast.error('Geolocation is not supported by your browser.');
+            await uploadFile();
         }
     };
 
@@ -99,7 +100,17 @@ const FarmerDashboard = () => {
             });
             fetchMyCrops();
         } catch (error) {
-            // handled by interceptor
+            // error handled by api interceptor
+        }
+    };
+
+    const handleDeleteCrop = async (id) => {
+        try {
+            await api.delete(`/crops/${id}`);
+            toast.success('Crop listing deleted.');
+            fetchMyCrops();
+        } catch (error) {
+            // error handled by api interceptor
         }
     };
 
@@ -150,7 +161,7 @@ const FarmerDashboard = () => {
             ) : crops.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {crops.map((crop) => (
-                        <CropCard key={crop._id} crop={crop} role="Farmer" />
+                        <CropCard key={crop._id} crop={crop} role="Farmer" onDelete={handleDeleteCrop} />
                     ))}
                 </div>
             ) : (

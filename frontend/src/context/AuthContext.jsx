@@ -24,15 +24,19 @@ export const AuthProvider = ({ children }) => {
                 } catch (error) {
                     console.error("Auth check failed:", error);
                     logout(); // handles 401/403 via interceptor too, but good to be explicit
+                } finally {
+                    setLoading(false);
                 }
+            } else {
+                setLoading(false);
             }
-            setLoading(false);
         };
         checkAuth();
     }, []);
 
     const loginWithGoogle = async () => {
         try {
+            setLoading(true); // Start pulse
             toast.info('Opening Google popup...', { toastId: 'googlePopup', autoClose: 4000 });
             const result = await signInWithPopup(auth, googleProvider);
             toast.dismiss('googlePopup');
@@ -40,16 +44,20 @@ export const AuthProvider = ({ children }) => {
             
             try {
                 // Check if user exists in backend
-                toast.info('Authenticating with backend... (This may take up to 50s if the server is asleep)', { toastId: 'backendAuth', autoClose: 5000 });
+                toast.info('Authenticating with backend...', { toastId: 'backendAuth', autoClose: 5000 });
                 const res = await api.post('/auth/login', { 
                     firebaseUid: firebaseUser.uid,
-                    email: firebaseUser.email 
+                    email: firebaseUser.email,
+                    name: firebaseUser.displayName,
+                    profileImage: firebaseUser.photoURL || 'no-photo.jpg'
                 });
                 toast.dismiss('backendAuth');
+                
                 // If successful (user exists), log them in
                 if (res.data.token) localStorage.setItem('token', res.data.token);
-                setUser(res.data);
                 localStorage.setItem('user', JSON.stringify(res.data));
+                setUser(res.data);
+                
                 return { isNewUser: false, data: res.data };
             } catch (backendError) {
                 toast.dismiss('backendAuth');
@@ -70,19 +78,27 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Firebase Login Error:", error);
             throw error;
+        } finally {
+            setLoading(false); // End pulse
         }
     };
 
     const registerProfile = async (userData) => {
-        const res = await api.post('/auth/register', userData);
-        
-        const token = res.data.token || res.data.user?.token;
-        const userDataFromBackend = res.data.user || res.data;
-        
-        if (token) localStorage.setItem('token', token);
-        setUser(userDataFromBackend);
-        localStorage.setItem('user', JSON.stringify(userDataFromBackend));
-        return res.data;
+        try {
+            setLoading(true); // Start pulse
+            const res = await api.post('/auth/register', userData);
+            
+            const token = res.data.token || res.data.user?.token;
+            const userDataFromBackend = res.data.user || res.data;
+            
+            if (token) localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userDataFromBackend));
+            setUser(userDataFromBackend);
+            
+            return res.data;
+        } finally {
+            setLoading(false); // End pulse
+        }
     };
 
     const logout = () => {
@@ -93,8 +109,13 @@ export const AuthProvider = ({ children }) => {
         auth.signOut().catch(console.error);
     };
 
+    const updateUserContext = (newUserData) => {
+        setUser(newUserData);
+        localStorage.setItem('user', JSON.stringify(newUserData));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, loginWithGoogle, registerProfile, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginWithGoogle, registerProfile, logout, updateUserContext }}>
             {children}
         </AuthContext.Provider>
     );

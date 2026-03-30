@@ -13,14 +13,15 @@ const ADMIN_EMAILS = [
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, phone, aadhar, firebaseUid, role, location, profileImage } = req.body;
+    const { name, email: rawEmail, phone, aadhar, firebaseUid, role, location, profileImage } = req.body;
+    const email = rawEmail?.toLowerCase();
 
     // Auto-assign Admin role for specific emails
-    const finalRole = ADMIN_EMAILS.includes(email?.toLowerCase()) ? 'Admin' : role;
+    const finalRole = ADMIN_EMAILS.includes(email) ? 'Admin' : role;
 
     // Check if user exists by email, phone, aadhar, or firebaseUid
     const existingUsers = await User.find({ 
-        $or: [{ email }, { phone }, { aadhar }, { firebaseUid }] 
+        $or: [{ email: email }, { phone }, { aadhar }, { firebaseUid }] 
     });
 
     if (existingUsers.length > 0) {
@@ -88,9 +89,12 @@ const authUser = asyncHandler(async (req, res) => {
 
     // If not found by firebaseUid, check if a user exists with this email (pre-created by Admin)
     if (!user && req.body.email) {
-        user = await User.findOne({ email: req.body.email });
+        user = await User.findOne({ email: req.body.email.toLowerCase() });
         if (user && !user.firebaseUid) {
             user.firebaseUid = firebaseUid;
+            // Update missing fields from frontend-provided data
+            if (req.body.name) user.name = req.body.name;
+            if (req.body.profileImage) user.profileImage = req.body.profileImage;
             await user.save();
         } else if (user && user.firebaseUid !== firebaseUid) {
             // Email matches but Firebase UID is different - security check

@@ -26,7 +26,7 @@ const LoginPage = () => {
                 navigate('/create-profile', { state: { firebaseUserData: result.firebaseUserData } });
             } else {
                 toast.success('Logged in successfully!');
-                navigate(`/dashboard/${result.data.role?.toLowerCase() || 'farmer'}`);
+                // Navigation is handled by the useEffect hook once the AuthContext updates
             }
         } catch (error) {
             const errorMsg = error?.response?.data?.message || error?.message || 'Failed to log in with Google.';

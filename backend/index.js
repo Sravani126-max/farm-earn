@@ -38,7 +38,11 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 // Serve uploaded files as static
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: [
+        process.env.FRONTEND_URL || 'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:5175'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true

@@ -82,7 +82,7 @@ const VerificationModal = ({ crop, isOpen, onClose, onRefresh }) => {
                             className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all ${status === 'Verified' ? 'border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-green-200 dark:hover:border-green-900'}`}
                         >
                             <CheckCircle className="h-6 w-6" />
-                            <span className="font-bold">Approve</span>
+                            <span className="font-bold">Accept & Verify</span>
                         </button>
                         <button
                             type="button"

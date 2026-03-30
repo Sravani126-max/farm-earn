@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../../utils/api';
 import { Loader2, ClipboardCheck, AlertCircle, Search, Filter, Warehouse } from 'lucide-react';
 import CropCard from '../../components/crops/CropCard';
@@ -12,6 +13,7 @@ const AgentDashboard = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('Pending verification');
     const [coords, setCoords] = useState(null);
+    const location = useLocation();
 
     useEffect(() => {
         if ("geolocation" in navigator) {
@@ -19,7 +21,9 @@ const AgentDashboard = () => {
                 const { latitude, longitude } = position.coords;
                 setCoords({ latitude, longitude });
             }, (error) => {
-                console.error("Location access denied");
+                console.error("Location access denied - fetching all crops without proximity");
+                setCoords(null);
+                fetchCrops(); // Fetch without coords if denied
             });
         }
     }, []);
@@ -37,11 +41,21 @@ const AgentDashboard = () => {
             if (coords) {
                 params.latitude = coords.latitude;
                 params.longitude = coords.longitude;
-                params.radius = 5; // 5km radius
+                params.radius = 100; // Increase to 100km radius to be safe
             }
 
             const res = await api.get(url, { params });
-            setCrops(res.data);
+            const allCrops = res.data;
+            setCrops(allCrops);
+
+            // If we came from the marketplace with a specific crop ID to verify
+            if (location.state?.verifyCropId) {
+                const targetCrop = allCrops.find(c => c._id === location.state.verifyCropId);
+                // Check if targetCrop exists AND is pending verification
+                if (targetCrop && targetCrop.status === 'Pending verification') {
+                    handleVerifyClick(targetCrop);
+                }
+            }
         } catch (error) {
             console.error(error);
         } finally {

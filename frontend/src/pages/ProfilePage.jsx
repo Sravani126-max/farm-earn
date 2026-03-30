@@ -6,7 +6,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const ProfilePage = () => {
-    const { user: authUser } = useContext(AuthContext);
+    const { user: authUser, updateUserContext } = useContext(AuthContext);
     const [searchParams, setSearchParams] = useSearchParams();
     const initialTab = searchParams.get('tab') === 'settings' ? 'settings' : 'profile';
     const [activeTab, setActiveTab] = useState(initialTab);
@@ -152,6 +152,7 @@ const ProfilePage = () => {
             // Auto-save the profile image to the user record
             await api.put('/users/profile', { profileImage: res.data.imageUrl });
             setProfile(prev => ({ ...prev, profileImage: res.data.imageUrl }));
+            if (updateUserContext) updateUserContext({ ...authUser, profileImage: res.data.imageUrl });
             
             toast.success('Profile picture updated successfully!');
         } catch (error) {
@@ -167,6 +168,7 @@ const ProfilePage = () => {
             setSaving(true);
             const res = await api.put('/users/profile', formData);
             setProfile(res.data);
+            if (updateUserContext) updateUserContext(res.data);
             toast.success('Profile updated successfully!');
             handleTabChange('profile');
         } catch (err) {

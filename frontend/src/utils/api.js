@@ -53,10 +53,8 @@ api.interceptors.response.use(
         if (error.response?.status === 401 || error.response?.status === 403) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            // If it's a 403, we should redirect to login since they are blocked
-            if (error.response?.status === 403) {
-                window.location.href = '/login';
-            }
+            // Note: We don't use window.location.href here as it causes hard reloads 
+            // and wipes AuthContext state. ProtectedRoute handles the redirect.
         }
 
         return Promise.reject(error);

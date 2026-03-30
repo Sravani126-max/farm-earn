@@ -48,4 +48,28 @@ const authorizeRoles = (...roles) => {
     };
 };
 
-export { protect, authorizeRoles };
+const protectOptional = asyncHandler(async (req, res, next) => {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+            // Verify JWT Token
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            
+            // Find user in our db using token id
+            req.user = await User.findById(decoded.id).select('-password');
+            // If they are blocked, we still don't want them doing "privileged" things even on optional routes
+            if (req.user && req.user.isBlocked) {
+                res.status(403);
+                throw new Error('Account is blocked. Please contact admin.');
+            }
+        } catch (error) {
+            console.error("Optional Auth Token failed:", error.message);
+            // Move on even if token fails - it's optional
+        }
+    }
+    next();
+});
+
+export { protect, authorizeRoles, protectOptional };

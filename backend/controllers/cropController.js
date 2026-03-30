@@ -7,20 +7,9 @@ import Crop from '../models/Crop.js';
 const addCrop = asyncHandler(async (req, res) => {
     const { cropName, quantity, price, harvestDate, cropImage, description, farmingMethod, latitude, longitude } = req.body;
 
-    if (!latitude || !longitude) {
-        res.status(400);
-        throw new Error('Location is required. Please enable location services.');
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
+    const lat = latitude ? parseFloat(latitude) : 0;
+    const lng = longitude ? parseFloat(longitude) : 0;
     const validCoords = !isNaN(lat) && !isNaN(lng) ? [lng, lat] : [0, 0];
-
-    // To prevent saving [0,0] if they bypassed JS validation
-    if (lat === 0 && lng === 0) {
-        res.status(400);
-        throw new Error('Valid location coordinates are required.');
-    }
 
     const crop = new Crop({
         cropName,
@@ -96,30 +85,35 @@ const getAllCrops = asyncHandler(async (req, res) => {
     let query = {};
     const { latitude, longitude, radius = 5 } = req.query;
 
-    if (req.user.role === 'Buyer') {
-        query = { status: 'Verified' };
-    } else if (req.user.role === 'Agent') {
-        // Agents see all crops (pending + verified) for their area
-        // If coordinates provided and valid, filter by proximity
-        const lat = parseFloat(latitude);
-        const lng = parseFloat(longitude);
-        if (latitude && longitude && !isNaN(lat) && !isNaN(lng) &&
-            !(lat === 0 && lng === 0)) {
-            query = {
-                location: {
-                    $near: {
-                        $geometry: {
-                            type: 'Point',
-                            coordinates: [lng, lat]
-                        },
-                        $maxDistance: radius * 1000
+    if (req.user && (req.user.role === 'Agent' || req.user.role === 'Admin')) {
+        if (req.user.role === 'Agent') {
+            // Agents see all crops (pending + verified)
+            // Only filter by proximity if coordinates are provided and valid
+            const lat = parseFloat(latitude);
+            const lng = parseFloat(longitude);
+            
+            if (latitude && longitude && !isNaN(lat) && !isNaN(lng) && !(lat === 0 && lng === 0)) {
+                query = {
+                    location: {
+                        $near: {
+                            $geometry: {
+                                type: 'Point',
+                                coordinates: [lng, lat]
+                            },
+                            $maxDistance: (radius || 50) * 1000 // Default to 50km if no radius provided
+                        }
                     }
-                }
-            };
+                };
+            } else {
+                // If no coords, return all crops for verification
+                query = {};
+            }
+        } else if (req.user.role === 'Admin') {
+            query = {}; // Admin sees all
         }
-        // If no valid coordinates, return all crops (no proximity filter)
-    } else if (req.user.role === 'Admin') {
-        query = {}; // Admin sees all
+    } else {
+        // Buyers and Farmers (in marketplace) only see Verified crops
+        query = { status: 'Verified' };
     }
     // Farmers use /farmer-crops endpoint
 
