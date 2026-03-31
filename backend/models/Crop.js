@@ -40,7 +40,7 @@ const cropSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['Pending verification', 'Verified', 'Rejected', 'Sold'],
+            enum: ['Pending verification', 'Verified', 'Rejected', 'Sold', 'Purchasal in progress'],
             default: 'Pending verification',
         },
         agentVerification: {

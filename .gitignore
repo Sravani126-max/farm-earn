@@ -8,3 +8,4 @@ build/
 .agents/
 brain/
 backend/*-firebase-adminsdk-fbsvc-*.json
+backend/uploads/

@@ -2,13 +2,15 @@ import { useState, useEffect, useContext } from 'react';
 import api from '../../utils/api';
 import { AuthContext } from '../../context/AuthContext';
 import CropCard from '../../components/crops/CropCard';
-import { Plus, X, Upload, Loader2, Package, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Plus, X, Upload, Loader2, Package, CheckCircle, Clock, AlertCircle, ShoppingCart, Phone } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const FarmerDashboard = () => {
     const { user } = useContext(AuthContext);
     const [crops, setCrops] = useState([]);
+    const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [txLoading, setTxLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({
@@ -25,6 +27,7 @@ const FarmerDashboard = () => {
 
     useEffect(() => {
         fetchMyCrops();
+        fetchTransactions();
     }, []);
 
     const fetchMyCrops = async () => {
@@ -36,6 +39,29 @@ const FarmerDashboard = () => {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchTransactions = async () => {
+        try {
+            const res = await api.get('/transactions/farmer');
+            setTransactions(res.data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleTransactionStatus = async (id, status) => {
+        try {
+            setTxLoading(true);
+            await api.put(`/transactions/${id}`, { status });
+            toast.success(`Transaction ${status.toLowerCase()} successfully!`);
+            fetchTransactions();
+            fetchMyCrops();
+        } catch (error) {
+            toast.error('Failed to update transaction status.');
+        } finally {
+            setTxLoading(false);
         }
     };
 
@@ -70,7 +96,7 @@ const FarmerDashboard = () => {
                     const { latitude, longitude } = position.coords;
                     await uploadFile(latitude, longitude);
                 },
-                async (error) => {
+                async () => {
                     toast.info('Location access denied. Uploading image without GPS data.');
                     await uploadFile();
                 },
@@ -117,9 +143,11 @@ const FarmerDashboard = () => {
     const stats = [
         { label: 'Total Crops', value: crops.length, icon: <Package />, color: 'text-blue-600' },
         { label: 'Verified', value: crops.filter(c => c.status === 'Verified').length, icon: <CheckCircle />, color: 'text-green-600' },
-        { label: 'Pending', value: crops.filter(c => c.status === 'Pending verification').length, icon: <Clock />, color: 'text-yellow-600' },
-        { label: 'Rejected', value: crops.filter(c => c.status === 'Rejected').length, icon: <AlertCircle />, color: 'text-red-600' }
+        { label: 'Requests', value: transactions.filter(t => t.status === 'Requested').length, icon: <Clock />, color: 'text-purple-600' },
+        { label: 'Sold', value: crops.filter(c => c.status === 'Sold').length, icon: <CheckCircle />, color: 'text-blue-600' }
     ];
+
+    const pendingRequests = transactions.filter(t => t.status === 'Requested');
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors duration-200">
@@ -151,6 +179,64 @@ const FarmerDashboard = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Purchase Requests Section */}
+            {pendingRequests.length > 0 && (
+                <div className="mb-12">
+                    <div className="flex items-center gap-2 mb-6">
+                        <ShoppingCart className="h-6 w-6 text-purple-600" />
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Purchase Requests</h2>
+                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-bold">{pendingRequests.length} New</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {pendingRequests.map((tx) => (
+                            <div key={tx._id} className="card p-6 border-l-4 border-l-purple-500 bg-purple-50/30 dark:bg-purple-900/10 transition-shadow hover:shadow-md">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-12 w-12 rounded-lg bg-white dark:bg-gray-800 border p-1 shadow-sm overflow-hidden">
+                                            <img src={tx.cropId?.cropImage} alt="" className="h-full w-full object-cover rounded-md" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg dark:text-white">{tx.cropId?.cropName}</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">From: <span className="font-medium text-gray-900 dark:text-gray-200">{tx.buyerId?.name}</span></p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">Total Price</p>
+                                        <p className="font-bold text-primary-600">₹{tx.totalPrice}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 py-3 border-y dark:border-gray-700 mb-4 text-sm">
+                                    <div>
+                                        <p className="text-gray-500 dark:text-gray-400 text-xs">Quantity</p>
+                                        <p className="font-bold dark:text-white">{tx.quantity} qtl</p>
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="text-gray-500 dark:text-gray-400 text-xs">Contact Buyer</p>
+                                        <p className="font-bold dark:text-white flex items-center gap-1"><Phone className="h-3 w-3" /> {tx.buyerId?.phone}</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button 
+                                        disabled={txLoading}
+                                        onClick={() => handleTransactionStatus(tx._id, 'Accepted')}
+                                        className="flex-1 btn-primary py-2 text-sm bg-purple-600 hover:bg-purple-700"
+                                    >
+                                        Accept Request
+                                    </button>
+                                    <button 
+                                        disabled={txLoading}
+                                        onClick={() => handleTransactionStatus(tx._id, 'Cancelled')}
+                                        className="px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm font-bold transition-colors"
+                                    >
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Crop Listings */}
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Your Listings</h2>

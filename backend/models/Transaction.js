@@ -19,7 +19,7 @@ const transactionSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['Requested', 'Completed', 'Cancelled'],
+            enum: ['Requested', 'Accepted', 'Completed', 'Cancelled'],
             default: 'Requested',
         },
         date: {

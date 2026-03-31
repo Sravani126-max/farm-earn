@@ -10,7 +10,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (user && user.role) {
+        if (user && user.role && !user.isBlocked) {
             navigate(`/dashboard/${user.role.toLowerCase()}`);
         }
     }, [user, navigate]);

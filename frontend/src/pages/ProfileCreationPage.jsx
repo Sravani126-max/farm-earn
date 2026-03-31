@@ -26,7 +26,7 @@ const ProfileCreationPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        if (user && user.role) {
+        if (user && user.role && !user.isBlocked) {
             navigate(`/dashboard/${user.role.toLowerCase()}`);
         }
         

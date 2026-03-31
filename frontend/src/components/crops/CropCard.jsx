@@ -1,13 +1,19 @@
-import { MapPin, Calendar, Tag, CheckCircle2, XCircle, Clock, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Tag, CheckCircle2, XCircle, Clock, Trash2, ShoppingCart, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import api from '../../utils/api';
+import { toast } from 'react-toastify';
 
 const CropCard = ({ crop, role, onDelete }) => {
     const navigate = useNavigate();
+    const [requesting, setRequesting] = useState(false);
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'Verified': return 'bg-green-100 text-green-700 border-green-200';
             case 'Rejected': return 'bg-red-100 text-red-700 border-red-200';
             case 'Sold': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'Purchasal in progress': return 'bg-purple-100 text-purple-700 border-purple-200';
             default: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
         }
     };
@@ -17,7 +23,34 @@ const CropCard = ({ crop, role, onDelete }) => {
             case 'Verified': return <CheckCircle2 className="h-4 w-4 mr-1" />;
             case 'Rejected': return <XCircle className="h-4 w-4 mr-1" />;
             case 'Sold': return <CheckCircle2 className="h-4 w-4 mr-1" />;
+            case 'Purchasal in progress': return <Clock className="h-4 w-4 mr-1" />;
             default: return <Clock className="h-4 w-4 mr-1" />;
+        }
+    };
+
+    const handleRequestPurchase = async () => {
+        const quantity = prompt(`Enter quantity to purchase (Max: ${crop.quantity} quintals):`, crop.quantity);
+        
+        if (quantity === null) return;
+        
+        const qtyNum = parseFloat(quantity);
+        if (isNaN(qtyNum) || qtyNum <= 0 || qtyNum > crop.quantity) {
+            toast.error('Invalid quantity entered.');
+            return;
+        }
+
+        try {
+            setRequesting(true);
+            await api.post('/transactions/request', {
+                cropId: crop._id,
+                quantity: qtyNum
+            });
+            toast.success('Purchase request sent to the farmer!');
+            navigate('/dashboard/buyer');
+        } catch (error) {
+            toast.error(error?.response?.data?.message || 'Failed to send purchase request.');
+        } finally {
+            setRequesting(false);
         }
     };
 
@@ -89,11 +122,19 @@ const CropCard = ({ crop, role, onDelete }) => {
 
                 {role === 'Buyer' && crop.status === 'Verified' && (
                     <button 
-                        onClick={() => navigate('/dashboard/buyer')}
-                        className="btn-primary w-full mt-2"
+                        onClick={handleRequestPurchase}
+                        disabled={requesting}
+                        className="btn-primary w-full mt-2 flex items-center justify-center gap-2"
                     >
-                        Request Purchase
+                        {requesting ? <Loader2 className="animate-spin h-5 w-5" /> : <ShoppingCart className="h-5 w-5" />}
+                        {requesting ? 'Processing...' : 'Request Purchase'}
                     </button>
+                )}
+
+                {role === 'Buyer' && crop.status === 'Purchasal in progress' && (
+                    <div className="w-full mt-2 p-2 bg-purple-50 text-purple-700 text-center text-sm font-bold rounded-lg border border-purple-100">
+                        Purchasal in progress
+                    </div>
                 )}
                 
                 {!role && crop.status === 'Verified' && (

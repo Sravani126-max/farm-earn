@@ -49,8 +49,11 @@ api.interceptors.response.use(
             toast.error(message);
         }
 
-        // Optional: Logout if token is expired, unauthorized, or user is blocked (403)
-        if (error.response?.status === 401 || error.response?.status === 403) {
+        // Logout if token is expired (401) or account is explicitly blocked (403 with specific message)
+        const isAuthError = error.response?.status === 401;
+        const isBlockedError = error.response?.status === 403 && message.toLowerCase().includes('blocked');
+        
+        if (isAuthError || isBlockedError) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             // Note: We don't use window.location.href here as it causes hard reloads 

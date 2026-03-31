@@ -26,6 +26,7 @@ const BuyerDashboard = () => {
     const getStatusStyle = (status) => {
         switch (status) {
             case 'Requested': return 'bg-yellow-100 text-yellow-700';
+            case 'Accepted': return 'bg-purple-100 text-purple-700';
             case 'Completed': return 'bg-green-100 text-green-700';
             case 'Cancelled': return 'bg-red-100 text-red-700';
             default: return 'bg-gray-100 text-gray-700';
@@ -111,8 +112,16 @@ const BuyerDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusStyle(transaction.status)}`}>
-                                {transaction.status}
+                            <div className="flex flex-col items-end gap-2">
+                                <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusStyle(transaction.status)}`}>
+                                    {transaction.status}
+                                </div>
+                                {transaction.status === 'Requested' && (
+                                    <p className="text-[10px] text-yellow-600 font-bold animate-pulse text-right">Waiting for response...</p>
+                                )}
+                                {transaction.status === 'Accepted' && (
+                                    <p className="text-[10px] text-purple-600 font-bold text-right">Farmer accepted. Ready!</p>
+                                )}
                             </div>
                         </div>
                     ))}
