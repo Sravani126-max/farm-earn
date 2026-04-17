@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
 import CropCard from '../components/crops/CropCard';
 import { Search, Filter, Loader2, Leaf } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 const CropMarketplace = () => {
+    const { user } = useContext(AuthContext);
     const [crops, setCrops] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -76,7 +78,7 @@ const CropMarketplace = () => {
             ) : filteredCrops.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {filteredCrops.map((crop) => (
-                        <CropCard key={crop._id} crop={crop} role="Buyer" />
+                        <CropCard key={crop._id} crop={crop} role={user?.role || 'Guest'} />
                     ))}
                 </div>
             ) : (

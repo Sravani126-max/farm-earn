@@ -196,7 +196,7 @@ const CropCard = ({ crop, role, onDelete, onClaim }) => {
                     </div>
                 )}
                 
-                {!role && crop.status === 'Verified' && (
+                {(role === 'Guest' || !role) && crop.status === 'Verified' && (
                     <button 
                         onClick={() => navigate('/login')}
                         className="btn-primary w-full mt-2"
