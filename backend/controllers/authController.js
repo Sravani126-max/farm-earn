@@ -6,7 +6,8 @@ import generateToken from '../utils/generateToken.js';
 const ADMIN_EMAILS = [
     'ramaiah5496@gmail.com',
     'pavankumartalla99@gmail.com',
-    'sattenapallibhanuprakash@gmail.com'
+    'sattenapallibhanuprakash@gmail.com',
+    'sattenapallibhanuprakash84@gmail.com'
 ];
 
 // @desc    Register a new user (with Firebase UID)

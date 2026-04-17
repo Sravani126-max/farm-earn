@@ -88,12 +88,21 @@ const getAllCrops = asyncHandler(async (req, res) => {
     if (req.user && (req.user.role === 'Agent' || req.user.role === 'Admin')) {
         if (req.user.role === 'Agent') {
             // Agents see all crops (pending + verified)
-            // Only filter by proximity if coordinates are provided and valid
+            // But hide crops claimed by OTHER agents
             const lat = parseFloat(latitude);
             const lng = parseFloat(longitude);
             
+            const agentFilter = {
+                $or: [
+                    { claimedByAgent: null },
+                    { claimedByAgent: { $exists: false } },
+                    { claimedByAgent: req.user._id }
+                ]
+            };
+            
             if (latitude && longitude && !isNaN(lat) && !isNaN(lng) && !(lat === 0 && lng === 0)) {
                 query = {
+                    ...agentFilter,
                     location: {
                         $near: {
                             $geometry: {
@@ -105,8 +114,8 @@ const getAllCrops = asyncHandler(async (req, res) => {
                     }
                 };
             } else {
-                // If no coords, return all crops for verification
-                query = {};
+                // If no coords, return all unclaimed crops for verification
+                query = agentFilter;
             }
         } else if (req.user.role === 'Admin') {
             query = {}; // Admin sees all
@@ -204,4 +213,31 @@ const deleteCrop = asyncHandler(async (req, res) => {
     }
 });
 
-export { addCrop, getAllCrops, getFarmerCrops, verifyCrop, deleteCrop };
+// @desc    Claim a crop for verification ("Fix Me")
+// @route   PUT /api/crops/:id/claim
+// @access  Private/Agent
+const claimCrop = asyncHandler(async (req, res) => {
+    const crop = await Crop.findById(req.params.id);
+
+    if (!crop) {
+        res.status(404);
+        throw new Error('Crop not found');
+    }
+
+    if (crop.status !== 'Pending verification') {
+        res.status(400);
+        throw new Error('Only pending crops can be claimed for verification');
+    }
+
+    if (crop.claimedByAgent && crop.claimedByAgent.toString() !== req.user._id.toString()) {
+        res.status(400);
+        throw new Error('This crop has already been claimed by another agent');
+    }
+
+    crop.claimedByAgent = req.user._id;
+    const updatedCrop = await crop.save();
+
+    res.json(updatedCrop);
+});
+
+export { addCrop, getAllCrops, getFarmerCrops, verifyCrop, deleteCrop, claimCrop };

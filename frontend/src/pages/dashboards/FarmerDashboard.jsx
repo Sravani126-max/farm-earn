@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import api from '../../utils/api';
 import { AuthContext } from '../../context/AuthContext';
 import CropCard from '../../components/crops/CropCard';
-import { Plus, X, Upload, Loader2, Package, CheckCircle, Clock, AlertCircle, ShoppingCart, Phone } from 'lucide-react';
+import { Plus, X, Upload, Loader2, Package, CheckCircle, Clock, AlertCircle, ShoppingCart, Phone, Mail, MapPin, User } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const FarmerDashboard = () => {
@@ -214,6 +214,34 @@ const FarmerDashboard = () => {
                                     <div className="flex-grow">
                                         <p className="text-gray-500 dark:text-gray-400 text-xs">Contact Buyer</p>
                                         <p className="font-bold dark:text-white flex items-center gap-1"><Phone className="h-3 w-3" /> {tx.buyerId?.phone}</p>
+                                    </div>
+                                </div>
+                                {/* Full Buyer Details */}
+                                <div className="mb-4 p-3 bg-gradient-to-br from-blue-50 to-primary-50 dark:from-gray-700 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600">
+                                    <p className="text-[10px] font-bold text-primary-700 dark:text-primary-400 uppercase tracking-wider mb-2">Buyer Details</p>
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                            <User className="h-3 w-3 text-primary-500 flex-shrink-0" />
+                                            <span className="font-medium">{tx.buyerId?.name}</span>
+                                        </div>
+                                        {tx.buyerId?.phone && (
+                                            <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                                                <Phone className="h-3 w-3 text-primary-500 flex-shrink-0" />
+                                                <span>{tx.buyerId.phone}</span>
+                                            </div>
+                                        )}
+                                        {tx.buyerId?.email && (
+                                            <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                                                <Mail className="h-3 w-3 text-primary-500 flex-shrink-0" />
+                                                <span className="truncate">{tx.buyerId.email}</span>
+                                            </div>
+                                        )}
+                                        {tx.buyerId?.location && (
+                                            <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                                                <MapPin className="h-3 w-3 text-primary-500 flex-shrink-0" />
+                                                <span>{tx.buyerId.location}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex gap-3">

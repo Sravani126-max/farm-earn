@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { ShoppingBag, Clock, CheckCircle, XCircle, Search, Package, Phone, ShoppingCart } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, XCircle, Search, Package, Phone, ShoppingCart, Mail, MapPin, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const BuyerDashboard = () => {
@@ -85,44 +85,74 @@ const BuyerDashboard = () => {
             ) : transactions.length > 0 ? (
                 <div className="space-y-4">
                     {transactions.map((transaction) => (
-                        <div key={transaction._id} className="card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-4">
-                                <img src={transaction.cropId?.cropImage} className="h-20 w-20 object-cover rounded-xl border" alt="" />
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">{transaction.cropId?.cropName}</h3>
-                                    <p className="text-sm text-gray-500 font-medium">Farmer: {transaction.farmerId?.name}</p>
-                                    <div className="flex items-center gap-4 mt-1 text-xs text-gray-400">
-                                        <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {transaction.farmerId?.phone}</span>
+                        <div key={transaction._id} className="card p-6 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <img src={transaction.cropId?.cropImage} className="h-20 w-20 object-cover rounded-xl border" alt="" />
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900">{transaction.cropId?.cropName}</h3>
+                                        <p className="text-sm text-gray-500 font-medium">Farmer: {transaction.farmerId?.name}</p>
                                     </div>
                                 </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
+                                    <div>
+                                        <p className="text-gray-400 mb-1">Quantity</p>
+                                        <p className="font-bold">{transaction.quantity} qtl</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-400 mb-1">Total Price</p>
+                                        <p className="font-bold text-primary-600">₹{transaction.totalPrice}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-400 mb-1">Date</p>
+                                        <p className="font-bold">{new Date(transaction.date).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-end gap-2">
+                                    <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusStyle(transaction.status)}`}>
+                                        {transaction.status}
+                                    </div>
+                                    {transaction.status === 'Requested' && (
+                                        <p className="text-[10px] text-yellow-600 font-bold animate-pulse text-right">Waiting for response...</p>
+                                    )}
+                                    {transaction.status === 'Accepted' && (
+                                        <p className="text-[10px] text-purple-600 font-bold text-right">Farmer accepted. Ready!</p>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
-                                <div>
-                                    <p className="text-gray-400 mb-1">Quantity</p>
-                                    <p className="font-bold">{transaction.quantity} qtl</p>
+                            {/* Farmer Details Section */}
+                            {transaction.farmerId && (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <p className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2">Farmer Contact Details</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                        <div className="flex items-center gap-2 text-gray-600">
+                                            <User className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                            <span className="font-medium">{transaction.farmerId.name}</span>
+                                        </div>
+                                        {transaction.farmerId.phone && (
+                                            <div className="flex items-center gap-2 text-gray-600">
+                                                <Phone className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                <span>{transaction.farmerId.phone}</span>
+                                            </div>
+                                        )}
+                                        {transaction.farmerId.email && (
+                                            <div className="flex items-center gap-2 text-gray-600">
+                                                <Mail className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                <span>{transaction.farmerId.email}</span>
+                                            </div>
+                                        )}
+                                        {transaction.farmerId.location && (
+                                            <div className="flex items-center gap-2 text-gray-600">
+                                                <MapPin className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                <span>{transaction.farmerId.location}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-gray-400 mb-1">Total Price</p>
-                                    <p className="font-bold text-primary-600">₹{transaction.totalPrice}</p>
-                                </div>
-                                <div>
-                                    <p className="text-gray-400 mb-1">Date</p>
-                                    <p className="font-bold">{new Date(transaction.date).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col items-end gap-2">
-                                <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusStyle(transaction.status)}`}>
-                                    {transaction.status}
-                                </div>
-                                {transaction.status === 'Requested' && (
-                                    <p className="text-[10px] text-yellow-600 font-bold animate-pulse text-right">Waiting for response...</p>
-                                )}
-                                {transaction.status === 'Accepted' && (
-                                    <p className="text-[10px] text-purple-600 font-bold text-right">Farmer accepted. Ready!</p>
-                                )}
-                            </div>
+                            )}
                         </div>
                     ))}
                 </div>

@@ -62,6 +62,11 @@ const cropSchema = new mongoose.Schema(
                 default: [],
             },
         },
+        claimedByAgent: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User',
+            default: null,
+        },
         // Location is now optional — stored only if GPS is available
         location: {
             type: {

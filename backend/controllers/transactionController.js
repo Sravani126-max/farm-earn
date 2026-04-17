@@ -51,7 +51,7 @@ const requestPurchase = asyncHandler(async (req, res) => {
 const getBuyerTransactions = asyncHandler(async (req, res) => {
     const transactions = await Transaction.find({ buyerId: req.user._id })
         .populate('cropId', 'cropName cropImage price')
-        .populate('farmerId', 'name phone')
+        .populate('farmerId', 'name phone email location profileImage')
         .sort({ createdAt: -1 });
     res.json(transactions);
 });
@@ -62,7 +62,7 @@ const getBuyerTransactions = asyncHandler(async (req, res) => {
 const getFarmerTransactions = asyncHandler(async (req, res) => {
     const transactions = await Transaction.find({ farmerId: req.user._id })
         .populate('cropId', 'cropName cropImage price')
-        .populate('buyerId', 'name phone')
+        .populate('buyerId', 'name phone email location profileImage')
         .sort({ createdAt: -1 });
     res.json(transactions);
 });

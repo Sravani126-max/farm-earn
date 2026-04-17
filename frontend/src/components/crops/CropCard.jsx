@@ -1,12 +1,13 @@
-import { MapPin, Calendar, Tag, CheckCircle2, XCircle, Clock, Trash2, ShoppingCart, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Tag, CheckCircle2, XCircle, Clock, Trash2, ShoppingCart, Loader2, User, Phone, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
 
-const CropCard = ({ crop, role, onDelete }) => {
+const CropCard = ({ crop, role, onDelete, onClaim }) => {
     const navigate = useNavigate();
     const [requesting, setRequesting] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -53,6 +54,8 @@ const CropCard = ({ crop, role, onDelete }) => {
             setRequesting(false);
         }
     };
+
+    const farmer = crop.farmerId;
 
     return (
         <div className="card group hover:shadow-md transition-shadow duration-300 dark:bg-gray-800 dark:border-gray-700">
@@ -110,6 +113,62 @@ const CropCard = ({ crop, role, onDelete }) => {
                         <span className="line-clamp-1">{crop?.location?.address || (crop?.location?.coordinates?.[0] ? 'Location Captured' : 'No location')}</span>
                     </div>
                 </div>
+
+                {/* Farmer Details Toggle - visible for Buyer, Agent, Admin roles */}
+                {farmer && typeof farmer === 'object' && (role === 'Buyer' || role === 'Agent' || role === 'Admin') && (
+                    <div className="mb-3">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowDetails(!showDetails); }}
+                            className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1 transition-colors"
+                        >
+                            <User className="h-3.5 w-3.5" />
+                            {showDetails ? 'Hide Farmer Details' : 'View Farmer Details'}
+                        </button>
+                        {showDetails && (
+                            <div className="mt-2 p-3 bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-700 dark:to-gray-700 rounded-xl border border-primary-100 dark:border-gray-600 space-y-1.5 text-xs animate-fadeIn">
+                                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                    <User className="h-3.5 w-3.5 text-primary-500" />
+                                    <span className="font-bold">{farmer.name}</span>
+                                </div>
+                                {farmer.phone && (
+                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                        <Phone className="h-3.5 w-3.5 text-primary-500" />
+                                        <span>{farmer.phone}</span>
+                                    </div>
+                                )}
+                                {farmer.email && (
+                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                        <Mail className="h-3.5 w-3.5 text-primary-500" />
+                                        <span>{farmer.email}</span>
+                                    </div>
+                                )}
+                                {farmer.location && (
+                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                        <MapPin className="h-3.5 w-3.5 text-primary-500" />
+                                        <span>{farmer.location}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Fix Me button for Agent on pending crops */}
+                {role === 'Agent' && crop.status === 'Pending verification' && !crop.claimedByAgent && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onClaim && onClaim(crop._id); }}
+                        className="w-full mt-2 mb-2 py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+                    >
+                        🔧 Fix Me — I'll Verify This
+                    </button>
+                )}
+
+                {/* Show "Claimed by you" badge if agent already claimed it */}
+                {role === 'Agent' && crop.claimedByAgent && (
+                    <div className="w-full mt-2 mb-2 py-2 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-center text-xs font-bold rounded-xl border border-green-200 dark:border-green-800">
+                        ✅ Claimed by you — Ready for verification
+                    </div>
+                )}
 
                 {role === 'Agent' && crop.status === 'Pending verification' && (
                     <button 

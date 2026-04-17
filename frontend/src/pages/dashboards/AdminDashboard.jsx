@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import {
     Users, Sprout, TrendingUp, BarChart3, ShieldAlert, CheckCircle,
-    Trash2, UserX, UserCheck, Loader2, Search, UserPlus, Phone, Mail, User, MapPin
+    Trash2, UserX, UserCheck, Loader2, Search, UserPlus, Phone, Mail, User, MapPin, Eye, EyeOff, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -14,6 +14,13 @@ const AdminDashboard = () => {
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [expandedCropId, setExpandedCropId] = useState(null);
+
+    // Analytics detail states
+    const [analyticsUsers, setAnalyticsUsers] = useState([]);
+    const [showAnalyticsUsers, setShowAnalyticsUsers] = useState(false);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+    const [hoveredUserId, setHoveredUserId] = useState(null);
 
     // Add Agent form state
     const [agentForm, setAgentForm] = useState({ name: '', email: '', phone: '', location: '' });
@@ -43,6 +50,19 @@ const AdminDashboard = () => {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAnalyticsUsers = async () => {
+        try {
+            setAnalyticsLoading(true);
+            const res = await api.get('/users');
+            setAnalyticsUsers(res.data);
+            setShowAnalyticsUsers(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setAnalyticsLoading(false);
         }
     };
 
@@ -119,35 +139,132 @@ const AdminDashboard = () => {
                     <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
                 </div>
             ) : activeTab === 'analytics' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="card p-8 text-center">
-                        <div className="h-14 w-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Users className="h-8 w-8" />
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div
+                            className="card p-8 text-center cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]"
+                            onClick={() => { if (!showAnalyticsUsers) fetchAnalyticsUsers(); else setShowAnalyticsUsers(false); }}
+                        >
+                            <div className="h-14 w-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Users className="h-8 w-8" />
+                            </div>
+                            <p className="text-gray-500 font-medium">Total Users</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalUsers}</p>
+                            <p className="text-xs text-primary-500 font-medium mt-2">
+                                {showAnalyticsUsers ? '▲ Click to hide' : '▼ Click to view all users'}
+                            </p>
                         </div>
-                        <p className="text-gray-500 font-medium">Total Users</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalUsers}</p>
-                    </div>
-                    <div className="card p-8 text-center">
-                        <div className="h-14 w-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Sprout className="h-8 w-8" />
+                        <div className="card p-8 text-center">
+                            <div className="h-14 w-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Sprout className="h-8 w-8" />
+                            </div>
+                            <p className="text-gray-500 font-medium">Farmers</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.farmers}</p>
                         </div>
-                        <p className="text-gray-500 font-medium">Farmers</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.farmers}</p>
-                    </div>
-                    <div className="card p-8 text-center">
-                        <div className="h-14 w-14 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <TrendingUp className="h-8 w-8" />
+                        <div className="card p-8 text-center">
+                            <div className="h-14 w-14 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <TrendingUp className="h-8 w-8" />
+                            </div>
+                            <p className="text-gray-500 font-medium">Buyers</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.buyers}</p>
                         </div>
-                        <p className="text-gray-500 font-medium">Buyers</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.buyers}</p>
-                    </div>
-                    <div className="card p-8 text-center">
-                        <div className="h-14 w-14 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <ShieldAlert className="h-8 w-8" />
+                        <div className="card p-8 text-center">
+                            <div className="h-14 w-14 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <ShieldAlert className="h-8 w-8" />
+                            </div>
+                            <p className="text-gray-500 font-medium">Agents</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.agents}</p>
                         </div>
-                        <p className="text-gray-500 font-medium">Agents</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.agents}</p>
                     </div>
+
+                    {/* Analytics Users List with Hover Details */}
+                    {showAnalyticsUsers && (
+                        <div className="card overflow-hidden animate-fadeIn">
+                            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+                                <h3 className="font-bold text-gray-900">All Users — Hover for details</h3>
+                                <span className="text-sm text-gray-500">{analyticsUsers.length} users</span>
+                            </div>
+                            {analyticsLoading ? (
+                                <div className="flex justify-center py-10">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+                                    {analyticsUsers.map(u => (
+                                        <div
+                                            key={u._id}
+                                            className="relative group"
+                                            onMouseEnter={() => setHoveredUserId(u._id)}
+                                            onMouseLeave={() => setHoveredUserId(null)}
+                                        >
+                                            <div className="p-4 border rounded-xl hover:shadow-md transition-all cursor-pointer bg-white hover:border-primary-300">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                                                        {u.name?.charAt(0)?.toUpperCase()}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="font-bold text-gray-900 text-sm truncate">{u.name}</p>
+                                                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                            u.role === 'Farmer' ? 'bg-green-100 text-green-700' :
+                                                            u.role === 'Buyer' ? 'bg-yellow-100 text-yellow-700' :
+                                                            u.role === 'Agent' ? 'bg-blue-100 text-blue-700' :
+                                                            'bg-purple-100 text-purple-700'
+                                                        }`}>
+                                                            {u.role}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Hover Tooltip with Full Details */}
+                                            {hoveredUserId === u._id && (
+                                                <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-4 space-y-2 animate-fadeIn" style={{ minWidth: '250px' }}>
+                                                    <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+                                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-400 to-blue-500 flex items-center justify-center text-white font-bold">
+                                                            {u.name?.charAt(0)?.toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-gray-900">{u.name}</p>
+                                                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                                u.role === 'Farmer' ? 'bg-green-100 text-green-700' :
+                                                                u.role === 'Buyer' ? 'bg-yellow-100 text-yellow-700' :
+                                                                u.role === 'Agent' ? 'bg-blue-100 text-blue-700' :
+                                                                'bg-purple-100 text-purple-700'
+                                                            }`}>
+                                                                {u.role}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-1.5 text-xs">
+                                                        <div className="flex items-center gap-2 text-gray-600">
+                                                            <Mail className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                            <span className="truncate">{u.email}</span>
+                                                        </div>
+                                                        {u.phone && (
+                                                            <div className="flex items-center gap-2 text-gray-600">
+                                                                <Phone className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                                <span>{u.phone}</span>
+                                                            </div>
+                                                        )}
+                                                        {u.location && (
+                                                            <div className="flex items-center gap-2 text-gray-600">
+                                                                <MapPin className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                                <span>{u.location}</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex items-center gap-2 text-gray-600">
+                                                            <User className="h-3.5 w-3.5 text-primary-500 flex-shrink-0" />
+                                                            <span>{!u.isBlocked ? '✅ Active' : '🚫 Blocked'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             ) : activeTab === 'agents' ? (
                 <div className="space-y-8">
@@ -317,6 +434,7 @@ const AdminDashboard = () => {
                                     ) : (
                                         <>
                                             <th className="px-6 py-4">Crop Name</th>
+                                            <th className="px-6 py-4">Farmer</th>
                                             <th className="px-6 py-4">Price</th>
                                             <th className="px-6 py-4">Status</th>
                                             <th className="px-6 py-4 text-right">Action</th>
@@ -346,29 +464,86 @@ const AdminDashboard = () => {
                                         </td>
                                     </tr>
                                 )) : filteredCrops.map(crop => (
-                                    <tr key={crop._id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <img src={crop.cropImage} className="h-10 w-10 rounded-lg object-cover" alt="" />
-                                                <span className="font-medium text-gray-900">{crop.cropName}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">₹{crop.price}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${crop.status === 'Verified' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                {crop.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleDeleteCrop(crop._id)}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Delete Listing"
-                                            >
-                                                <Trash2 className="h-5 w-5" />
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <React.Fragment key={crop._id}>
+                                        <tr
+                                            className="hover:bg-gray-50 transition-colors cursor-pointer"
+                                            onClick={() => setExpandedCropId(expandedCropId === crop._id ? null : crop._id)}
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <img src={crop.cropImage} className="h-10 w-10 rounded-lg object-cover" alt="" />
+                                                    <div>
+                                                        <span className="font-medium text-gray-900">{crop.cropName}</span>
+                                                        <p className="text-[10px] text-primary-500 font-medium">Click for farmer details</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                                {crop.farmerId?.name || 'Unknown'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">₹{crop.price}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${crop.status === 'Verified' ? 'bg-green-100 text-green-700' : crop.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    {crop.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteCrop(crop._id); }}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete Listing"
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {/* Expanded Farmer Details Row */}
+                                        {expandedCropId === crop._id && crop.farmerId && typeof crop.farmerId === 'object' && (
+                                            <tr>
+                                                <td colSpan="5" className="px-6 py-0">
+                                                    <div className="py-4 px-6 bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl mb-3 mt-1 border border-primary-100 animate-fadeIn">
+                                                        <p className="text-xs font-bold text-primary-700 mb-3 uppercase tracking-wider">Farmer Details</p>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                            <div className="flex items-center gap-2">
+                                                                <User className="h-4 w-4 text-primary-500" />
+                                                                <div>
+                                                                    <p className="text-[10px] text-gray-400 uppercase">Name</p>
+                                                                    <p className="font-bold text-gray-900">{crop.farmerId.name}</p>
+                                                                </div>
+                                                            </div>
+                                                            {crop.farmerId.phone && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Phone className="h-4 w-4 text-primary-500" />
+                                                                    <div>
+                                                                        <p className="text-[10px] text-gray-400 uppercase">Phone</p>
+                                                                        <p className="font-bold text-gray-900">{crop.farmerId.phone}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {crop.farmerId.email && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Mail className="h-4 w-4 text-primary-500" />
+                                                                    <div>
+                                                                        <p className="text-[10px] text-gray-400 uppercase">Email</p>
+                                                                        <p className="font-bold text-gray-900">{crop.farmerId.email}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {crop.farmerId.location && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <MapPin className="h-4 w-4 text-primary-500" />
+                                                                    <div>
+                                                                        <p className="text-[10px] text-gray-400 uppercase">Address</p>
+                                                                        <p className="font-bold text-gray-900">{crop.farmerId.location}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>

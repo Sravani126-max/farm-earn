@@ -4,6 +4,7 @@ import api from '../../utils/api';
 import { Loader2, ClipboardCheck, AlertCircle, Search, Filter, Warehouse } from 'lucide-react';
 import CropCard from '../../components/crops/CropCard';
 import VerificationModal from '../../components/crops/VerificationModal';
+import { toast } from 'react-toastify';
 
 const AgentDashboard = () => {
     const [crops, setCrops] = useState([]);
@@ -68,6 +69,16 @@ const AgentDashboard = () => {
         setIsModalOpen(true);
     };
 
+    const handleClaimCrop = async (cropId) => {
+        try {
+            await api.put(`/crops/${cropId}/claim`);
+            toast.success('Crop claimed! Only you can verify this crop now.');
+            fetchCrops();
+        } catch (error) {
+            toast.error(error?.response?.data?.message || 'Failed to claim crop.');
+        }
+    };
+
     const filteredCrops = crops.filter(crop => {
         const matchesSearch = crop.cropName.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'All' || crop.status === statusFilter;
@@ -117,7 +128,7 @@ const AgentDashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredCrops.map((crop) => (
                         <div key={crop._id} onClick={() => crop.status === 'Pending verification' && handleVerifyClick(crop)} className={crop.status === 'Pending verification' ? 'cursor-pointer' : ''}>
-                            <CropCard crop={crop} role="Agent" />
+                            <CropCard crop={crop} role="Agent" onClaim={handleClaimCrop} />
                         </div>
                     ))}
                 </div>
